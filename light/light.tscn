@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://c4npo6i2xhv7l"]
+
+[ext_resource type="Script" path="res://light/light.gd" id="1_nnmag"]
+
+[sub_resource type="Gradient" id="Gradient_vasa2"]
+interpolation_mode = 2
+interpolation_color_space = 2
+offsets = PackedFloat32Array(0, 0.8)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_h7iqs"]
+gradient = SubResource("Gradient_vasa2")
+width = 100
+height = 100
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[node name="Light" type="TextureRect" unique_id=1160494432]
+custom_minimum_size = Vector2(100, 100)
+offset_right = 100.0
+offset_bottom = 100.0
+texture = SubResource("GradientTexture2D_h7iqs")
+script = ExtResource("1_nnmag")

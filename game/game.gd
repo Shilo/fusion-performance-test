@@ -14,7 +14,7 @@ var world_bounds: Rect2:
 
 
 func get_player_world_bounds(player: Player) -> Rect2:
-	return Rect2(world_bounds.position + player.sprite_extends, world_bounds.size - player.sprite_extends * 2)
+	return Rect2(world_bounds.position + player.extents, world_bounds.size - player.extents * 2)
 
 
 func _enter_tree() -> void:

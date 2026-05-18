@@ -1,7 +1,7 @@
 class_name Player extends CharacterBody2D
 
 @export var speed := 300.0
-@onready var sprite_extends: Vector2 = %Sprite.get_rect().size / 2
+@onready var extents: Vector2 = %Sprite.get_rect().size / 2
 
 
 func _physics_process(__) -> void:
