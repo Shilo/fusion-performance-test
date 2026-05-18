@@ -15,7 +15,7 @@ var _move_timer: Timer
 func _ready() -> void:
 	_current_center = _clamp_center(Game.instance.world_bounds.get_center())
 	_target_center = _current_center
-	_update_light()
+	_update()
 
 	_move_timer = Timer.new()
 	_move_timer.wait_time = 1
@@ -38,7 +38,7 @@ func _process(delta: float) -> void:
 	var weight := _elapsed / duration
 	_current_center = _clamp_center(_start_center.lerp(_target_center, weight))
 	_current_color = _start_color.lerp(_target_color, weight)
-	_update_light()
+	_update()
 
 	if weight == 1.0:
 		_moving = false
@@ -83,6 +83,6 @@ func _clamp_center(center: Vector2) -> Vector2:
 	return center.clamp(bounds.position, bounds.end)
 
 
-func _update_light() -> void:
+func _update() -> void:
 	position = _current_center - size / 2
 	self_modulate = _current_color
