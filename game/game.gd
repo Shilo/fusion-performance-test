@@ -16,8 +16,7 @@ func get_player_world_bounds(player: Player) -> Rect2:
 
 
 func _ready() -> void:
-	for i in 1000:
-		_spawn_player()
+	_spawn_player()
 
 
 func _spawn_player() -> void:
