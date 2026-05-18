@@ -3,7 +3,7 @@ class_name Game extends Node
 static var instance: Game
 
 @export var player_scene: PackedScene
-@onready var world := %World
+@onready var world: Node2D = %World
 
 
 var world_bounds: Rect2:
@@ -25,14 +25,14 @@ func _spawn_player() -> void:
 	var player: Player = player_scene.instantiate()
 	world.add_child(player)
 
-	var bounds := get_player_world_bounds(player)
+	var bounds := get_player_spawn_bounds(player)
 	player.position = Vector2(
 		randf_range(bounds.position.x, bounds.end.x),
 		randf_range(bounds.position.y, bounds.end.y)
 	)
 
 
-func get_player_world_bounds(player: Player) -> Rect2:
+func get_player_spawn_bounds(player: Player) -> Rect2:
 	return Rect2(world_bounds.position + player.extents, world_bounds.size - player.extents * 2)
 
 

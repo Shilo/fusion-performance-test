@@ -33,7 +33,6 @@ angular_damp_mode = 1
 script = ExtResource("1_nnmag")
 
 [node name="Texture" type="TextureRect" parent="." unique_id=1160494432]
-custom_minimum_size = Vector2(320, 320)
 offset_left = -160.0
 offset_top = -160.0
 offset_right = 160.0
@@ -41,5 +40,4 @@ offset_bottom = 160.0
 texture = SubResource("GradientTexture2D_h7iqs")
 
 [node name="Collision" type="CollisionShape2D" parent="." unique_id=1942528543]
-unique_name_in_owner = true
 shape = SubResource("CircleShape2D_pb6c2")
