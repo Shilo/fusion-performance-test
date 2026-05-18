@@ -16,3 +16,7 @@ texture = ExtResource("2_i3pqv")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1728595357]
 shape = SubResource("CircleShape2D_rkbax")
+
+[node name="FusionSharedReplicator" type="FusionSharedReplicator" parent="." unique_id=1979783658]
+process_priority = -2147483647
+process_physics_priority = -2147483647

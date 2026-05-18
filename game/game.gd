@@ -18,22 +18,26 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	Fusion.room_joined.connect(_on_room_joined)
+	Fusion.connected_to_photon.connect(_on_connected)
 	_connect.call_deferred()
 
+
 func _connect() -> void:
-	Fusion.connected_to_photon.connect(func():
-		Fusion.join_or_create_room("lobby")
-	)
 	Fusion.connect_to_photon()
 
-func _spawn_player() -> void:
-	var player: Player = player_scene.instantiate()
-	world.add_child(player)
 
-	var bounds := get_player_spawn_bounds(player)
-	player.position = Vector2(
-		randf_range(bounds.position.x, bounds.end.x),
-		randf_range(bounds.position.y, bounds.end.y)
+func _on_connected() -> void:
+	Fusion.join_or_create_room("lobby")
+
+
+func _on_room_joined() -> void:
+	%FusionSpawner.spawn(null, func(player: Node2D) -> void:
+		var bounds := get_player_spawn_bounds(player)
+		player.global_position = Vector2(
+			randf_range(bounds.position.x, bounds.end.x),
+			randf_range(bounds.position.y, bounds.end.y)
+		)
 	)
 
 
