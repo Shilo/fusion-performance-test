@@ -2,6 +2,10 @@
 
 [ext_resource type="Script" uid="uid://xrqkt7206u3p" path="res://light/light.gd" id="1_nnmag"]
 
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_h7iqs"]
+friction = 0.0
+bounce = 1.0
+
 [sub_resource type="Gradient" id="Gradient_vasa2"]
 interpolation_mode = 2
 interpolation_color_space = 2
@@ -16,9 +20,27 @@ fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 1)
 
-[node name="Light" type="TextureRect" unique_id=1160494432]
-custom_minimum_size = Vector2(320, 320)
-offset_right = 100.0
-offset_bottom = 100.0
-texture = SubResource("GradientTexture2D_h7iqs")
+[sub_resource type="CircleShape2D" id="CircleShape2D_pb6c2"]
+radius = 160.0
+
+[node name="Light" type="RigidBody2D" unique_id=348785221]
+collision_layer = 2
+collision_mask = 2
+physics_material_override = SubResource("PhysicsMaterial_h7iqs")
+lock_rotation = true
+contact_monitor = true
+max_contacts_reported = 1
+linear_damp_mode = 1
+angular_damp_mode = 1
 script = ExtResource("1_nnmag")
+
+[node name="Texture" type="TextureRect" parent="." unique_id=1160494432]
+custom_minimum_size = Vector2(320, 320)
+offset_left = -160.0
+offset_top = -160.0
+offset_right = 160.0
+offset_bottom = 160.0
+texture = SubResource("GradientTexture2D_h7iqs")
+
+[node name="Collision" type="CollisionShape2D" parent="." unique_id=1942528543]
+shape = SubResource("CircleShape2D_pb6c2")
