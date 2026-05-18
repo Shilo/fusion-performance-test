@@ -14,3 +14,4 @@ player_scene = ExtResource("3_7jktm")
 unique_name_in_owner = true
 
 [node name="Light" parent="World" unique_id=1160494432 instance=ExtResource("3_h7iqs")]
+position = Vector2(640, 360)
