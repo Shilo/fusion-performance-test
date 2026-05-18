@@ -18,8 +18,13 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
-	_spawn_player()
+	_connect.call_deferred()
 
+func _connect() -> void:
+	Fusion.connected_to_photon.connect(func():
+		Fusion.join_or_create_room("lobby")
+	)
+	Fusion.connect_to_photon()
 
 func _spawn_player() -> void:
 	var player: Player = player_scene.instantiate()
