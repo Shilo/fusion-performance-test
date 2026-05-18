@@ -13,7 +13,6 @@ var world_bounds: Rect2:
 		return world_bounds
 
 
-
 func _enter_tree() -> void:
 	instance = self
 
@@ -25,8 +24,8 @@ func _ready() -> void:
 func _spawn_player() -> void:
 	var player: Player = player_scene.instantiate()
 	world.add_child(player)
-	
-	var bounds = get_player_world_bounds(player)
+
+	var bounds := get_player_world_bounds(player)
 	player.position = Vector2(
 		randf_range(bounds.position.x, bounds.end.x),
 		randf_range(bounds.position.y, bounds.end.y)
