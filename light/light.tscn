@@ -9,19 +9,17 @@ bounce = 1.0
 [sub_resource type="Gradient" id="Gradient_vasa2"]
 interpolation_mode = 2
 interpolation_color_space = 2
-offsets = PackedFloat32Array(0, 0.95, 1)
-colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+offsets = PackedFloat32Array(0, 0.8)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_h7iqs"]
 gradient = SubResource("Gradient_vasa2")
-width = 100
-height = 100
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 1)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_pb6c2"]
-radius = 160.0
+radius = 96.0
 
 [node name="Light" type="RigidBody2D" unique_id=348785221]
 collision_layer = 2
@@ -43,4 +41,5 @@ offset_bottom = 160.0
 texture = SubResource("GradientTexture2D_h7iqs")
 
 [node name="Collision" type="CollisionShape2D" parent="." unique_id=1942528543]
+unique_name_in_owner = true
 shape = SubResource("CircleShape2D_pb6c2")
