@@ -66,4 +66,4 @@ ui_down={
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.12941177, 0.14509805, 0.19607843, 1)
+environment/defaults/default_clear_color=Color(0, 0, 0, 1)

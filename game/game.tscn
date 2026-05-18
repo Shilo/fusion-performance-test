@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://dq3iw42r1scxs"]
 
 [ext_resource type="Script" uid="uid://dlktpuvixfafa" path="res://game/game.gd" id="1_feb5d"]
-[ext_resource type="Texture2D" uid="uid://fjfhcv8mwhjc" path="res://icon.svg" id="2_fc0e3"]
 [ext_resource type="PackedScene" uid="uid://cqckeic5mi5i2" path="res://player/player.tscn" id="3_7jktm"]
 
 [node name="Game" type="Node" unique_id=320556302]
@@ -14,9 +13,9 @@ player_scene = ExtResource("3_7jktm")
 unique_name_in_owner = true
 texture_filter = 1
 
-[node name="Ground" type="Sprite2D" parent="World" unique_id=1795787417]
+[node name="Ground" type="ColorRect" parent="World" unique_id=1787425059]
 unique_name_in_owner = true
-modulate = Color(1, 1, 1, 0.09803922)
-position = Vector2(640, 359.99997)
-scale = Vector2(9.999999, 5.6249995)
-texture = ExtResource("2_fc0e3")
+self_modulate = Color(1, 1, 1, 0.2)
+custom_minimum_size = Vector2(1280, 720)
+offset_right = 40.0
+offset_bottom = 40.0

@@ -2,6 +2,7 @@ class_name Game extends Node
 
 @export var player_scene: PackedScene
 @onready var world := %World
+@onready var ground := %Ground
 
 
 var world_bounds: Rect2:
@@ -28,3 +29,7 @@ func _spawn_player() -> void:
 		randf_range(bounds.position.x, bounds.end.x),
 		randf_range(bounds.position.y, bounds.end.y)
 	)
+
+
+func _randomize_ground_color() -> void:
+	ground.color = Color(randf(), randf(), randf())
