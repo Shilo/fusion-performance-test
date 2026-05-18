@@ -15,9 +15,6 @@ var world_bounds: Rect2:
 		return world_bounds
 
 
-func get_player_world_bounds(player: Player) -> Rect2:
-	return Rect2(world_bounds.position + player.extents, world_bounds.size - player.extents * 2)
-
 
 func _enter_tree() -> void:
 	instance = self
@@ -73,3 +70,24 @@ func _spawn_wall(wall_name: String, rect: Rect2) -> void:
 	collision.shape = shape
 	wall.add_child(collision)
 	world.add_child(wall)
+
+
+func get_player_world_bounds(player: Player) -> Rect2:
+	return Rect2(world_bounds.position + player.extents, world_bounds.size - player.extents * 2)
+
+
+func random_color(excluded_color := Color.TRANSPARENT) -> Color:
+	const COLORS := [
+		Color(1.0, 0.35, 0.55), # Red
+		Color(0.95, 0.42, 0.0), # Orange
+		Color(0.54, 0.54, 0.0), # Yellow
+		Color(0.0, 0.68, 0.18), # Green
+		Color(0.3, 0.51, 1.0),  # Blue
+		Color(0.48, 0.45, 1.0), # Indigo
+		Color(0.84, 0.35, 1.0), # Violet
+	]
+
+	var next_color: Color = COLORS.pick_random()
+	while next_color == excluded_color:
+		next_color = COLORS.pick_random()
+	return next_color

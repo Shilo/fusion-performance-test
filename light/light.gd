@@ -10,15 +10,6 @@ const DIAGONAL_DIRECTIONS := [
 
 @export var speed := 300.0
 @export var color_change_duration := 0.3
-@export var colors: Array[Color] = [
-	Color.RED,
-	Color.ORANGE,
-	Color.YELLOW,
-	Color.GREEN,
-	Color.BLUE,
-	Color.INDIGO,
-	Color.VIOLET,
-]
 
 @onready var collision: CollisionShape2D = $Collision
 
@@ -31,7 +22,7 @@ var _changing_color := false
 
 
 func _ready() -> void:
-	_current_color = _random_color()
+	_current_color = _get_random_color()
 	modulate = _current_color
 	body_entered.connect(_on_body_entered)
 
@@ -66,13 +57,10 @@ func _set_random_velocity() -> void:
 
 func _on_body_entered(__) -> void:
 	_start_color = _current_color
-	_target_color = _random_color()
+	_target_color = _get_random_color()
 	_color_elapsed = 0.0
 	_changing_color = true
 
 
-func _random_color() -> Color:
-	var next_color: Color = colors.pick_random()
-	while next_color == _current_color:
-		next_color = colors.pick_random()
-	return next_color
+func _get_random_color() -> Color:
+	return Game.instance.random_color(_current_color)
