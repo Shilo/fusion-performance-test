@@ -22,8 +22,6 @@ fill_to = Vector2(1, 1)
 radius = 80.0
 
 [node name="Light" type="RigidBody2D" unique_id=348785221]
-collision_layer = 2
-collision_mask = 2
 physics_material_override = SubResource("PhysicsMaterial_h7iqs")
 lock_rotation = true
 contact_monitor = true
