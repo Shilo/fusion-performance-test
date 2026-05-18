@@ -3,10 +3,15 @@
 [ext_resource type="Script" uid="uid://56pcl0qmh1yk" path="res://player/player.gd" id="1_onrkg"]
 [ext_resource type="Texture2D" uid="uid://fjfhcv8mwhjc" path="res://icon.svg" id="2_i3pqv"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_rkbax"]
+radius = 64.0
+
 [node name="Player" type="CharacterBody2D" unique_id=1525281574]
-position = Vector2(640, 360)
 script = ExtResource("1_onrkg")
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=1591021125]
 unique_name_in_owner = true
 texture = ExtResource("2_i3pqv")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1728595357]
+shape = SubResource("CircleShape2D_rkbax")
