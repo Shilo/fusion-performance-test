@@ -3,6 +3,15 @@
 [ext_resource type="Script" uid="uid://dlktpuvixfafa" path="res://game/game.gd" id="1_feb5d"]
 [ext_resource type="PackedScene" uid="uid://cqckeic5mi5i2" path="res://player/player.tscn" id="3_7jktm"]
 
+[sub_resource type="Gradient" id="Gradient_vasa2"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_h7iqs"]
+gradient = SubResource("Gradient_vasa2")
+width = 1280
+height = 720
+fill = 1
+
 [node name="Game" type="Node" unique_id=320556302]
 script = ExtResource("1_feb5d")
 player_scene = ExtResource("3_7jktm")
@@ -11,11 +20,10 @@ player_scene = ExtResource("3_7jktm")
 
 [node name="World" type="Node2D" parent="." unique_id=2136791550]
 unique_name_in_owner = true
-texture_filter = 1
 
-[node name="Ground" type="ColorRect" parent="World" unique_id=1787425059]
+[node name="Ground" type="TextureRect" parent="World" unique_id=1410648015]
 unique_name_in_owner = true
-self_modulate = Color(1, 1, 1, 0.2)
 custom_minimum_size = Vector2(1280, 720)
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 1280.0
+offset_bottom = 720.0
+texture = SubResource("GradientTexture2D_h7iqs")
