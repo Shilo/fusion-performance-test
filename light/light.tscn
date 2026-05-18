@@ -19,7 +19,7 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 1)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_pb6c2"]
-radius = 96.0
+radius = 80.0
 
 [node name="Light" type="RigidBody2D" unique_id=348785221]
 collision_layer = 2
