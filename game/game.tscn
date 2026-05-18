@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dq3iw42r1scxs"]
 
 [ext_resource type="Script" uid="uid://dlktpuvixfafa" path="res://game/game.gd" id="1_feb5d"]
+[ext_resource type="PackedScene" uid="uid://blbpfe2pmvy54" path="res://world/world_bounds.tscn" id="3_4fuuu"]
 [ext_resource type="PackedScene" uid="uid://cqckeic5mi5i2" path="res://player/player.tscn" id="3_7jktm"]
 [ext_resource type="PackedScene" uid="uid://c4npo6i2xhv7l" path="res://light/light.tscn" id="3_h7iqs"]
 
@@ -12,6 +13,8 @@ player_scene = ExtResource("3_7jktm")
 
 [node name="World" type="Node2D" parent="." unique_id=2136791550]
 unique_name_in_owner = true
+
+[node name="WorldBounds" parent="World" unique_id=302941771 instance=ExtResource("3_4fuuu")]
 
 [node name="Light" parent="World" unique_id=1160494432 instance=ExtResource("3_h7iqs")]
 position = Vector2(640, 360)

@@ -1,8 +1,6 @@
 class_name Game extends Node
 
 static var instance: Game
-const LIGHT_WALL_COLLISION_LAYER := 2
-const WALL_THICKNESS := 64.0
 
 @export var player_scene: PackedScene
 @onready var world := %World
@@ -21,7 +19,6 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
-	_spawn_world_walls()
 	_spawn_player()
 
 
@@ -34,42 +31,6 @@ func _spawn_player() -> void:
 		randf_range(bounds.position.x, bounds.end.x),
 		randf_range(bounds.position.y, bounds.end.y)
 	)
-
-
-func _spawn_world_walls() -> void:
-	var bounds := world_bounds
-	_spawn_wall("TopWall", Rect2(
-		bounds.position - Vector2(WALL_THICKNESS, WALL_THICKNESS),
-		Vector2(bounds.size.x + WALL_THICKNESS * 2, WALL_THICKNESS)
-	))
-	_spawn_wall("BottomWall", Rect2(
-		Vector2(bounds.position.x - WALL_THICKNESS, bounds.end.y),
-		Vector2(bounds.size.x + WALL_THICKNESS * 2, WALL_THICKNESS)
-	))
-	_spawn_wall("LeftWall", Rect2(
-		bounds.position - Vector2(WALL_THICKNESS, 0),
-		Vector2(WALL_THICKNESS, bounds.size.y)
-	))
-	_spawn_wall("RightWall", Rect2(
-		Vector2(bounds.end.x, bounds.position.y),
-		Vector2(WALL_THICKNESS, bounds.size.y)
-	))
-
-
-func _spawn_wall(wall_name: String, rect: Rect2) -> void:
-	var wall := StaticBody2D.new()
-	wall.name = wall_name
-	wall.collision_layer = LIGHT_WALL_COLLISION_LAYER
-	wall.collision_mask = LIGHT_WALL_COLLISION_LAYER
-	wall.position = rect.get_center()
-
-	var shape := RectangleShape2D.new()
-	shape.size = rect.size
-
-	var collision := CollisionShape2D.new()
-	collision.shape = shape
-	wall.add_child(collision)
-	world.add_child(wall)
 
 
 func get_player_world_bounds(player: Player) -> Rect2:
