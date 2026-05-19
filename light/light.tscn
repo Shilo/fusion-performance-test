@@ -55,7 +55,7 @@ shape = SubResource("CircleShape2D_pb6c2")
 [node name="StatsLabel" type="Label" parent="." unique_id=1173958881]
 unique_name_in_owner = true
 offset_left = -92.0
-offset_top = -195.0
+offset_top = -180.0
 offset_right = 92.0
 offset_bottom = -135.0
 theme_override_colors/font_color = Color(1, 0.96, 0.8, 1)
@@ -64,8 +64,7 @@ theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 11
 text = "id -
 local
-prop up 0.0 Hz
-rpc up 0.0 Hz"
+up 0.0 Hz"
 horizontal_alignment = 1
 vertical_alignment = 0
 

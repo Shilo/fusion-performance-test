@@ -3,6 +3,8 @@ class_name UI extends CanvasLayer
 const PLAYER_GROUP := "players"
 const SAMPLE_INTERVAL := 1.0
 const PLAYER_SCAN_INTERVAL := 0.25
+const RPC_PROBE_TARGET_HZ := 60.0
+const RPC_PROBE_INTERVAL := 1.0 / RPC_PROBE_TARGET_HZ
 const MOVEMENT_EPSILON_SQUARED := 0.0001
 const ROTATION_EPSILON := 0.0001
 const MONITOR_METHODS := {
@@ -24,17 +26,28 @@ var _player_sync_up_hz := 0.0
 var _player_sync_down_hz := 0.0
 var _authority_player_count := 0
 var _remote_player_count := 0
+var _rpc_probe_send_elapsed := 0.0
+var _rpc_probe_send_samples := 0
+var _rpc_probe_receive_samples := 0
+var _rpc_probe_send_hz := 0.0
+var _rpc_probe_receive_hz := 0.0
 
 
 func _ready() -> void:
+	Fusion.register_broadcast_receiver(self)
 	_build_panel()
 	_scan_players()
 	_refresh_stats()
 
 
+func _exit_tree() -> void:
+	Fusion.unregister_broadcast_receiver(self)
+
+
 func _process(delta: float) -> void:
 	_scan_elapsed += delta
 	_sample_elapsed += delta
+	_send_rpc_probe(delta)
 
 	if _scan_elapsed >= PLAYER_SCAN_INTERVAL:
 		_scan_elapsed = 0.0
@@ -43,8 +56,12 @@ func _process(delta: float) -> void:
 	if _sample_elapsed >= SAMPLE_INTERVAL:
 		_player_sync_up_hz = _player_sync_up_samples / _sample_elapsed
 		_player_sync_down_hz = _player_sync_down_samples / _sample_elapsed
+		_rpc_probe_send_hz = _rpc_probe_send_samples / _sample_elapsed
+		_rpc_probe_receive_hz = _rpc_probe_receive_samples / _sample_elapsed
 		_player_sync_up_samples = 0
 		_player_sync_down_samples = 0
+		_rpc_probe_send_samples = 0
+		_rpc_probe_receive_samples = 0
 		_sample_elapsed = 0.0
 		_refresh_stats()
 
@@ -125,6 +142,7 @@ func _build_panel() -> void:
 	_add_row(grid, &"traffic", "Traffic")
 	_add_row(grid, &"fusion_sync", "Sync Work")
 	_add_row(grid, &"fusion_loop", "Fusion Work")
+	_add_row(grid, &"rpc_probe", "RPC Sync")
 	_add_row(grid, &"player_sync", "Player Sync")
 
 
@@ -180,6 +198,10 @@ func _refresh_stats() -> void:
 	_set_label(&"fusion_loop", "Network %s\nUpdate %s" % [
 		_format_microseconds_as_ms(_fusion_monitor("service_us")),
 		_format_microseconds_as_ms(_fusion_monitor("update_us")),
+	])
+	_set_label(&"rpc_probe", "Send %s\nReceive %s" % [
+		_format_hz(_rpc_probe_send_hz),
+		_format_hz(_rpc_probe_receive_hz),
 	])
 	_set_label(&"player_sync", "Send %s\nReceive %s" % [
 		_format_sync_rate(_player_sync_up_hz, _authority_player_count),
@@ -279,6 +301,37 @@ func _store_player_state(player: Player, tracker: Dictionary) -> void:
 	tracker["last_rotation"] = player.global_rotation
 
 
+func _send_rpc_probe(delta: float) -> void:
+	if not Fusion.is_in_room() or not Fusion.is_master_client():
+		_rpc_probe_send_elapsed = 0.0
+		return
+
+	_rpc_probe_send_elapsed += delta
+	while _rpc_probe_send_elapsed >= RPC_PROBE_INTERVAL:
+		_rpc_probe_send_elapsed -= RPC_PROBE_INTERVAL
+		_rpc_probe_send_samples += 1
+		Fusion.rpc(rpc_probe)
+
+
+@rpc("any_peer", "call_remote", "unreliable_ordered")
+func rpc_probe() -> void:
+	if not _rpc_probe_sender_is_master():
+		return
+
+	_rpc_probe_receive_samples += 1
+
+
+func _rpc_probe_sender_is_master() -> bool:
+	if not Fusion.is_in_room():
+		return false
+
+	var room: FusionRoom = Fusion.get_room()
+	if room == null:
+		return false
+
+	return int(Fusion.get_rpc_sender()) == int(room.get_master_client_id())
+
+
 func _connection_status_text() -> String:
 	match int(_safe_fusion_call(&"get_connection_status")):
 		FusionClient.STATUS_DISCONNECTED:
@@ -370,6 +423,10 @@ func _format_rtt(value: Variant) -> String:
 	if rtt > 0.0 and rtt < 1.0:
 		rtt *= 1000.0
 	return "%.0f ms" % rtt
+
+
+func _format_hz(value: float) -> String:
+	return "%.1f Hz" % value
 
 
 func _format_sync_rate(total_hz: float, player_count: int) -> String:

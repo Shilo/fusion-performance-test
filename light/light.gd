@@ -8,8 +8,6 @@ const DIAGONAL_DIRECTIONS := [
 ]
 
 const LIGHT_SYNC_RATE_SAMPLE_INTERVAL := 1.0
-const LIGHT_RPC_TARGET_HZ := 60.0
-const LIGHT_RPC_INTERVAL := 1.0 / LIGHT_RPC_TARGET_HZ
 
 @export var speed := 300.0
 @export var color_change_duration := 0.3
@@ -39,11 +37,6 @@ var _sync_down_samples := 0
 var _sync_up_rate := 0.0
 var _sync_down_rate := 0.0
 var _sync_rate_elapsed := 0.0
-var _rpc_send_elapsed := 0.0
-var _rpc_up_samples := 0
-var _rpc_down_samples := 0
-var _rpc_up_rate := 0.0
-var _rpc_down_rate := 0.0
 
 @onready var _stats_label: Label = %StatsLabel
 
@@ -89,18 +82,13 @@ func _process(delta: float) -> void:
 	if has_authority:
 		sync_probe = _sync_probe + 1
 		_sync_up_samples += 1
-		_send_rpc_probe(delta)
 
 	_sync_rate_elapsed += delta
 	if _sync_rate_elapsed >= LIGHT_SYNC_RATE_SAMPLE_INTERVAL:
 		_sync_up_rate = _sync_up_samples / _sync_rate_elapsed
 		_sync_down_rate = _sync_down_samples / _sync_rate_elapsed
-		_rpc_up_rate = _rpc_up_samples / _sync_rate_elapsed
-		_rpc_down_rate = _rpc_down_samples / _sync_rate_elapsed
 		_sync_up_samples = 0
 		_sync_down_samples = 0
-		_rpc_up_samples = 0
-		_rpc_down_samples = 0
 		_sync_rate_elapsed = 0.0
 		_update_stats_label()
 
@@ -139,31 +127,10 @@ func _on_body_entered(__) -> void:
 	_changing_color = true
 
 
-func _send_rpc_probe(delta: float) -> void:
-	if not Fusion.is_in_room():
-		_rpc_send_elapsed = 0.0
-		return
-
-	_rpc_send_elapsed += delta
-	while _rpc_send_elapsed >= LIGHT_RPC_INTERVAL:
-		_rpc_send_elapsed -= LIGHT_RPC_INTERVAL
-		_rpc_up_samples += 1
-		Fusion.rpc(rpc_light_probe)
-
-
-@rpc("authority", "call_remote", "unreliable_ordered")
-func rpc_light_probe() -> void:
-	if has_authority:
-		return
-
-	_rpc_down_samples += 1
-
-
 func _update_stats_label() -> void:
 	var lines := ["id %s" % _format_owner_id()]
 	lines.append("local" if has_authority else "remote")
-	lines.append(_format_property_sync_direction_rate())
-	lines.append(_format_rpc_direction_rate())
+	lines.append(_format_sync_direction_rate())
 	_stats_label.text = "\n".join(lines)
 
 
@@ -176,18 +143,11 @@ func _format_owner_id() -> String:
 	return str(owner_id) if owner_id > 0 else "-"
 
 
-func _format_property_sync_direction_rate() -> String:
+func _format_sync_direction_rate() -> String:
 	if has_authority:
-		return "prop up %.1f Hz" % _sync_up_rate
+		return "up %.1f Hz" % _sync_up_rate
 
-	return "prop down %.1f Hz" % _sync_down_rate
-
-
-func _format_rpc_direction_rate() -> String:
-	if has_authority:
-		return "rpc up %.1f Hz" % _rpc_up_rate
-
-	return "rpc down %.1f Hz" % _rpc_down_rate
+	return "down %.1f Hz" % _sync_down_rate
 
 
 func _has_authority_safe() -> bool:
