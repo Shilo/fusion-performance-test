@@ -67,13 +67,40 @@ func _physics_process(__) -> void:
 
 
 func _update_call_rate_label() -> void:
+	var lines := []
+	if _is_master_player():
+		lines.append("master")
+
 	var role := "local" if has_authority else "remote"
-	_call_rate_label.text = "%s\nget %.1f/s set %.1f/s\nsnap %s" % [
-		role,
+	lines.append("id %s" % _format_owner_id())
+	lines.append(role)
+	lines.append("get %.1f/s set %.1f/s" % [
 		_manual_sync_get_rate,
 		_manual_sync_set_rate,
-		_format_snapshot_delay(),
-	]
+	])
+	lines.append("snap %s" % _format_snapshot_delay())
+	_call_rate_label.text = "\n".join(lines)
+
+
+func _is_master_player() -> bool:
+	var owner_id := _get_owner_id()
+	if owner_id <= 0 or not Fusion.is_in_room():
+		return false
+
+	var room: FusionRoom = Fusion.get_room()
+	if room == null:
+		return false
+
+	return owner_id == int(room.get_master_client_id())
+
+
+func _get_owner_id() -> int:
+	return int(%FusionSharedReplicator.get_owner_id())
+
+
+func _format_owner_id() -> String:
+	var owner_id := _get_owner_id()
+	return str(owner_id) if owner_id > 0 else "-"
 
 
 func _format_snapshot_delay() -> String:

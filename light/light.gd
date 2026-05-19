@@ -16,12 +16,14 @@ var _current_color := Color.WHITE
 var _target_color := Color.WHITE
 var _color_elapsed := 0.0
 var _changing_color := false
+var _last_has_authority := -1
 
 
 func _ready() -> void:
 	set_process(false)
 	Fusion.room_joined.connect(_joined)
 	%FusionSharedReplicator.authority_changed.connect(_on_authority_changed)
+	Fusion.player_left.connect(func(__, ___): _on_authority_changed(%FusionSharedReplicator.has_authority()))
 
 
 func _joined() -> void:
@@ -30,6 +32,12 @@ func _joined() -> void:
 
 
 func _on_authority_changed(has_authority: bool) -> void:
+	var current_has_authority := int(has_authority)
+	if _last_has_authority == current_has_authority:
+		return
+
+	_last_has_authority = current_has_authority
+
 	set_process(has_authority)
 	%Collision.disabled = not has_authority
 	
