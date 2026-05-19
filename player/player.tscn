@@ -36,10 +36,9 @@ theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 11
 text = "id -
 local
-get 0.0/s set 0.0/s
-snap 0 ms"
+up 0.0 Hz"
 horizontal_alignment = 1
-vertical_alignment = 1
+vertical_alignment = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1728595357]
 shape = SubResource("CircleShape2D_rkbax")
@@ -47,6 +46,7 @@ shape = SubResource("CircleShape2D_rkbax")
 [node name="FusionSharedReplicator" type="FusionSharedReplicator" parent="." unique_id=1979783658]
 owner_mode = 1
 replication_config = SubResource("FusionReplicationConfig_rkbax")
+interest_mode = 2
 root_replication_mode = 1
 root_snap_distance = 100.0
 unique_name_in_owner = true

@@ -68,8 +68,6 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
 	if _direction == Vector2.ZERO:
 		return
 	
-	print("=========== HI THERE", Fusion.get_local_player_id())
-	
 	if state.linear_velocity.length_squared() > 0.001:
 		_direction = state.linear_velocity.normalized()
 

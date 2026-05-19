@@ -82,7 +82,7 @@ func _build_panel() -> void:
 	add_child(margin)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(300.0, 0.0)
+	panel.custom_minimum_size = Vector2(360.0, 0.0)
 	margin.add_child(panel)
 
 	var style := StyleBoxFlat.new()
@@ -105,6 +105,7 @@ func _build_panel() -> void:
 
 	var title := Label.new()
 	title.text = "Network"
+	title.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	title.add_theme_font_size_override("font_size", 13)
 	title.add_theme_color_override("font_color", Color(0.82, 0.92, 1.0))
 	layout.add_child(title)
@@ -118,28 +119,31 @@ func _build_panel() -> void:
 	_add_row(grid, &"status", "Status")
 	_add_row(grid, &"room", "Room")
 	_add_row(grid, &"players", "Players")
-	_add_row(grid, &"local_player", "Local")
+	_add_row(grid, &"local_player", "My ID")
 	_add_row(grid, &"rtt", "RTT")
 	_add_row(grid, &"network_time", "Net Time")
 	_add_row(grid, &"traffic", "Traffic")
-	_add_row(grid, &"fusion_sync", "Fusion Sync")
-	_add_row(grid, &"fusion_loop", "Fusion Loop")
-	_add_row(grid, &"player_sync_up", "Player Up")
-	_add_row(grid, &"player_sync_down", "Player Down")
+	_add_row(grid, &"fusion_sync", "Sync Work")
+	_add_row(grid, &"fusion_loop", "Fusion Work")
+	_add_row(grid, &"player_sync", "Player Sync")
 
 
 func _add_row(grid: GridContainer, key: StringName, label_text: String) -> void:
 	var name_label := Label.new()
 	name_label.text = label_text
-	name_label.custom_minimum_size.x = 92.0
+	name_label.custom_minimum_size.x = 112.0
+	name_label.size_flags_vertical = Control.SIZE_FILL
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	name_label.add_theme_font_size_override("font_size", 11)
 	name_label.add_theme_color_override("font_color", Color(0.55, 0.64, 0.72))
 	grid.add_child(name_label)
 
 	var value_label := Label.new()
 	value_label.text = "-"
-	value_label.custom_minimum_size.x = 170.0
+	value_label.custom_minimum_size.x = 210.0
+	value_label.size_flags_vertical = Control.SIZE_FILL
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	value_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	value_label.add_theme_font_size_override("font_size", 11)
 	value_label.add_theme_color_override("font_color", Color(0.92, 0.97, 1.0))
 	grid.add_child(value_label)
@@ -164,21 +168,23 @@ func _refresh_stats() -> void:
 	_set_label(&"players", _players_text())
 	_set_label(&"local_player", _local_player_text())
 	_set_label(&"rtt", _format_rtt(_safe_fusion_call(&"get_rtt")))
-	_set_label(&"network_time", "%.2f s" % float(_safe_fusion_call(&"get_network_time")))
-	_set_label(&"traffic", "Up %s / Down %s" % [
+	_set_label(&"network_time", _format_duration(float(_safe_fusion_call(&"get_network_time"))))
+	_set_label(&"traffic", "Upload %s\nDownload %s" % [
 		_format_bps(_fusion_monitor("sent_bps")),
 		_format_bps(_fusion_monitor("recv_bps")),
 	])
-	_set_label(&"fusion_sync", "Out %.1f us / In %.1f us" % [
-		_fusion_monitor("sync_outbound_us"),
-		_fusion_monitor("sync_inbound_us"),
+	_set_label(&"fusion_sync", "Send %s\nReceive %s" % [
+		_format_microseconds_as_ms(_fusion_monitor("sync_outbound_us")),
+		_format_microseconds_as_ms(_fusion_monitor("sync_inbound_us")),
 	])
-	_set_label(&"fusion_loop", "Svc %.1f us / Upd %.1f us" % [
-		_fusion_monitor("service_us"),
-		_fusion_monitor("update_us"),
+	_set_label(&"fusion_loop", "Network %s\nUpdate %s" % [
+		_format_microseconds_as_ms(_fusion_monitor("service_us")),
+		_format_microseconds_as_ms(_fusion_monitor("update_us")),
 	])
-	_set_label(&"player_sync_up", _format_sync_rate(_player_sync_up_hz, _authority_player_count))
-	_set_label(&"player_sync_down", _format_sync_rate(_player_sync_down_hz, _remote_player_count))
+	_set_label(&"player_sync", "Send %s\nReceive %s" % [
+		_format_sync_rate(_player_sync_up_hz, _authority_player_count),
+		_format_sync_rate(_player_sync_down_hz, _remote_player_count),
+	])
 
 
 func _scan_players() -> void:
@@ -300,12 +306,15 @@ func _room_text() -> String:
 		return "-"
 
 	var max_players := room.get_max_players()
-	var capacity := str(max_players) if max_players > 0 else "-"
-	return "%s (%d/%s)" % [room.get_room_name(), room.get_player_count(), capacity]
+	var player_count := room.get_player_count()
+	if max_players > 0:
+		return "%s (%d/%d)" % [room.get_room_name(), player_count, max_players]
+
+	return "%s (%d players)" % [room.get_room_name(), player_count]
 
 
 func _players_text() -> String:
-	return "%d tracked, %d local" % [_tracked_players.size(), _authority_player_count]
+	return "%d total, %d local" % [_tracked_players.size(), _authority_player_count]
 
 
 func _local_player_text() -> String:
@@ -334,6 +343,28 @@ func _format_bps(value: float) -> String:
 	return "%d B/s" % int(roundf(value))
 
 
+func _format_microseconds_as_ms(value: float) -> String:
+	if value <= 0.0:
+		return "0 ms"
+
+	var ms := value / 1000.0
+	if ms >= 10.0:
+		return "%.1f ms" % ms
+	if ms >= 1.0:
+		return "%.2f ms" % ms
+	return "%.3f ms" % ms
+
+
+func _format_duration(seconds: float) -> String:
+	var whole_seconds := maxi(0, int(roundf(seconds)))
+	var minutes := int(whole_seconds / 60)
+	var remaining_seconds := whole_seconds % 60
+	if minutes > 0:
+		return "%dm %02ds" % [minutes, remaining_seconds]
+
+	return "%ds" % remaining_seconds
+
+
 func _format_rtt(value: Variant) -> String:
 	var rtt := maxf(0.0, float(value))
 	if rtt > 0.0 and rtt < 1.0:
@@ -343,9 +374,9 @@ func _format_rtt(value: Variant) -> String:
 
 func _format_sync_rate(total_hz: float, player_count: int) -> String:
 	if player_count <= 0:
-		return "0.0 Hz/player"
+		return "0.0 Hz each"
 
-	return "%.1f Hz/player (%.1f total)" % [total_hz / player_count, total_hz]
+	return "%.1f Hz each (%.1f Hz total)" % [total_hz / player_count, total_hz]
 
 
 func _set_label(key: StringName, value: String) -> void:

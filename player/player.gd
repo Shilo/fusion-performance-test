@@ -7,10 +7,10 @@ const MANUAL_SYNC_RATE_SAMPLE_INTERVAL := 1.0
 
 var manual_sync_probe: int:
 	set(value):
-		_manual_sync_set_calls += 1
 		_manual_sync_probe = value
+		if not has_authority:
+			_manual_sync_down_samples += 1
 	get:
-		_manual_sync_get_calls += 1
 		return _manual_sync_probe
 
 var extents: Vector2:
@@ -21,13 +21,13 @@ var extents: Vector2:
 
 var has_authority: bool:
 	get:
-		return %FusionSharedReplicator.has_authority()
+		return _has_authority_safe()
 
 var _manual_sync_probe := 0
-var _manual_sync_get_calls := 0
-var _manual_sync_set_calls := 0
-var _manual_sync_get_rate := 0.0
-var _manual_sync_set_rate := 0.0
+var _manual_sync_up_samples := 0
+var _manual_sync_down_samples := 0
+var _manual_sync_up_rate := 0.0
+var _manual_sync_down_rate := 0.0
 var _manual_sync_rate_elapsed := 0.0
 
 @onready var _call_rate_label: Label = %CallRateLabel
@@ -50,13 +50,14 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if has_authority:
 		manual_sync_probe = _manual_sync_probe + 1
+		_manual_sync_up_samples += 1
 
 	_manual_sync_rate_elapsed += delta
 	if _manual_sync_rate_elapsed >= MANUAL_SYNC_RATE_SAMPLE_INTERVAL:
-		_manual_sync_get_rate = _manual_sync_get_calls / _manual_sync_rate_elapsed
-		_manual_sync_set_rate = _manual_sync_set_calls / _manual_sync_rate_elapsed
-		_manual_sync_get_calls = 0
-		_manual_sync_set_calls = 0
+		_manual_sync_up_rate = _manual_sync_up_samples / _manual_sync_rate_elapsed
+		_manual_sync_down_rate = _manual_sync_down_samples / _manual_sync_rate_elapsed
+		_manual_sync_up_samples = 0
+		_manual_sync_down_samples = 0
 		_manual_sync_rate_elapsed = 0.0
 		_update_call_rate_label()
 
@@ -74,11 +75,7 @@ func _update_call_rate_label() -> void:
 	var role := "local" if has_authority else "remote"
 	lines.append("id %s" % _format_owner_id())
 	lines.append(role)
-	lines.append("get %.1f/s set %.1f/s" % [
-		_manual_sync_get_rate,
-		_manual_sync_set_rate,
-	])
-	lines.append("snap %s" % _format_snapshot_delay())
+	lines.append(_format_sync_direction_rate())
 	_call_rate_label.text = "\n".join(lines)
 
 
@@ -103,8 +100,13 @@ func _format_owner_id() -> String:
 	return str(owner_id) if owner_id > 0 else "-"
 
 
-func _format_snapshot_delay() -> String:
-	var delay := float(%FusionSharedReplicator.get_snapshot_current_delay())
-	if delay > 0.0 and delay < 1.0:
-		return "%.0f ms" % (delay * 1000.0)
-	return "%.2f s" % delay
+func _format_sync_direction_rate() -> String:
+	if has_authority:
+		return "up %.1f Hz" % _manual_sync_up_rate
+
+	return "down %.1f Hz" % _manual_sync_down_rate
+
+
+func _has_authority_safe() -> bool:
+	var replicator := get_node_or_null("FusionSharedReplicator") as FusionReplicator
+	return replicator != null and replicator.has_authority()
