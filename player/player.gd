@@ -68,10 +68,7 @@ func _physics_process(__) -> void:
 
 
 func _update_call_rate_label() -> void:
-	var lines := []
-	if _is_master_player():
-		lines.append("master")
-
+	var lines := ["master" if _is_master_player() else ""]
 	var role := "local" if has_authority else "remote"
 	lines.append("id %s" % _format_owner_id())
 	lines.append(role)

@@ -22,10 +22,13 @@ fill_to = Vector2(1, 1)
 radius = 80.0
 
 [sub_resource type="FusionReplicationConfig" id="FusionReplicationConfig_pb6c2"]
-property_count = 1
+property_count = 2
 properties/0/path = NodePath(":modulate")
 properties/0/max_array_capacity = 0
 properties/0/interface_tag = ""
+properties/1/path = NodePath(":sync_probe")
+properties/1/max_array_capacity = 0
+properties/1/interface_tag = ""
 
 [node name="Light" type="RigidBody2D" unique_id=348785221]
 collision_layer = 4
@@ -48,6 +51,23 @@ texture = SubResource("GradientTexture2D_h7iqs")
 [node name="Collision" type="CollisionShape2D" parent="." unique_id=1942528543]
 unique_name_in_owner = true
 shape = SubResource("CircleShape2D_pb6c2")
+
+[node name="StatsLabel" type="Label" parent="." unique_id=1173958881]
+unique_name_in_owner = true
+offset_left = -92.0
+offset_top = -195.0
+offset_right = 92.0
+offset_bottom = -135.0
+theme_override_colors/font_color = Color(1, 0.96, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 11
+text = "id -
+local
+prop up 0.0 Hz
+rpc up 0.0 Hz"
+horizontal_alignment = 1
+vertical_alignment = 0
 
 [node name="FusionSharedReplicator" type="FusionSharedReplicator" parent="." unique_id=666305594]
 owner_mode = 3
