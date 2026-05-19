@@ -52,9 +52,10 @@ func _process(delta: float) -> void:
 func _physics_process(_delta: float) -> void:
 	for id in _tracked_players.keys():
 		var tracker: Dictionary = _tracked_players[id]
-		var player: Player = tracker.get("player")
-		var replicator: FusionReplicator = tracker.get("replicator")
-		if not is_instance_valid(player) or not is_instance_valid(replicator):
+		var player := _get_tracker_player(tracker)
+		var replicator := _get_tracker_replicator(tracker)
+		if player == null or replicator == null:
+			_untrack_player(id)
 			continue
 		if not replicator.has_authority():
 			continue
@@ -149,9 +150,9 @@ func _refresh_stats() -> void:
 	_authority_player_count = 0
 	_remote_player_count = 0
 	for tracker in _tracked_players.values():
-		var player: Player = tracker.get("player")
-		var replicator: FusionReplicator = tracker.get("replicator")
-		if not is_instance_valid(player) or not is_instance_valid(replicator):
+		var player := _get_tracker_player(tracker)
+		var replicator := _get_tracker_replicator(tracker)
+		if player == null or replicator == null:
 			continue
 		if replicator.has_authority():
 			_authority_player_count += 1
@@ -189,8 +190,8 @@ func _scan_players() -> void:
 
 	for id in _tracked_players.keys():
 		var tracker: Dictionary = _tracked_players[id]
-		var player: Player = tracker.get("player")
-		if not is_instance_valid(player) or not seen.has(id):
+		var player := _get_tracker_player(tracker)
+		if player == null or not seen.has(id):
 			_untrack_player(id)
 
 
@@ -222,9 +223,9 @@ func _untrack_player(id: int) -> void:
 		return
 
 	var tracker: Dictionary = _tracked_players[id]
-	var replicator: FusionReplicator = tracker.get("replicator")
+	var replicator := _get_tracker_replicator(tracker)
 	var reset_callback: Callable = tracker.get("reset_callback", Callable())
-	if is_instance_valid(replicator) and reset_callback.is_valid() and replicator.state_reset.is_connected(reset_callback):
+	if replicator != null and reset_callback.is_valid() and replicator.state_reset.is_connected(reset_callback):
 		replicator.state_reset.disconnect(reset_callback)
 
 	_tracked_players.erase(id)
@@ -235,9 +236,23 @@ func _on_player_state_reset(_info: FusionStateResetInfo, id: int) -> void:
 		return
 
 	var tracker: Dictionary = _tracked_players[id]
-	var replicator: FusionReplicator = tracker.get("replicator")
-	if is_instance_valid(replicator) and not replicator.has_authority():
+	var replicator := _get_tracker_replicator(tracker)
+	if replicator != null and not replicator.has_authority():
 		_player_sync_down_samples += 1
+
+
+func _get_tracker_player(tracker: Dictionary) -> Player:
+	var player = tracker.get("player")
+	if not is_instance_valid(player):
+		return null
+	return player as Player
+
+
+func _get_tracker_replicator(tracker: Dictionary) -> FusionReplicator:
+	var replicator = tracker.get("replicator")
+	if not is_instance_valid(replicator):
+		return null
+	return replicator as FusionReplicator
 
 
 func _player_state_changed(player: Player, tracker: Dictionary) -> bool:
