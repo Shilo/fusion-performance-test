@@ -21,6 +21,12 @@ fill_to = Vector2(1, 1)
 [sub_resource type="CircleShape2D" id="CircleShape2D_pb6c2"]
 radius = 80.0
 
+[sub_resource type="FusionReplicationConfig" id="FusionReplicationConfig_pb6c2"]
+property_count = 1
+properties/0/path = NodePath(":modulate")
+properties/0/max_array_capacity = 0
+properties/0/interface_tag = ""
+
 [node name="Light" type="RigidBody2D" unique_id=348785221]
 collision_layer = 4
 collision_mask = 3
@@ -40,4 +46,14 @@ offset_bottom = 160.0
 texture = SubResource("GradientTexture2D_h7iqs")
 
 [node name="Collision" type="CollisionShape2D" parent="." unique_id=1942528543]
+unique_name_in_owner = true
 shape = SubResource("CircleShape2D_pb6c2")
+
+[node name="FusionSharedReplicator" type="FusionSharedReplicator" parent="." unique_id=666305594]
+owner_mode = 3
+replication_config = SubResource("FusionReplicationConfig_pb6c2")
+root_replication_mode = 1
+root_smoothing = false
+unique_name_in_owner = true
+process_priority = -2147483647
+process_physics_priority = -2147483647

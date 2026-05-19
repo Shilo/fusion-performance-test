@@ -8,15 +8,17 @@ var extents: Vector2:
 			extents = %Sprite.get_rect().size / 2
 		return extents
 
+var has_authority: bool:
+	get:
+		return %FusionSharedReplicator.has_authority()
+
 
 func _ready() -> void:
-	var has_authority: bool = %FusionSharedReplicator.has_authority()
+	set_physics_process(has_authority)
 	
 	if has_authority:
 		modulate = Game.instance.random_color()
 		z_index += 1
-	
-	set_physics_process(has_authority)
 
 
 func _physics_process(__) -> void:

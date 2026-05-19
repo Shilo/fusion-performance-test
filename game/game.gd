@@ -42,7 +42,6 @@ func _on_room_joined() -> void:
 
 
 func get_player_spawn_bounds(player: Player) -> Rect2:
-	print("======= ", player.extents)
 	return Rect2(world_bounds.position + player.extents, world_bounds.size - player.extents * 2)
 
 
