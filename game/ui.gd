@@ -34,6 +34,7 @@ var _rpc_probe_receive_hz := 0.0
 
 
 func _ready() -> void:
+	set_process_unhandled_input(true)
 	Fusion.register_broadcast_receiver(self)
 	_build_panel()
 	_scan_players()
@@ -64,6 +65,11 @@ func _process(delta: float) -> void:
 		_rpc_probe_receive_samples = 0
 		_sample_elapsed = 0.0
 		_refresh_stats()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"ui_select"):
+		_toggle_player_interest_areas()
 
 
 func _physics_process(_delta: float) -> void:
@@ -144,6 +150,7 @@ func _build_panel() -> void:
 	_add_row(grid, &"fusion_loop", "Fusion Work")
 	_add_row(grid, &"rpc_probe", "RPC Sync")
 	_add_row(grid, &"player_sync", "Player Sync")
+	_add_row(grid, &"interest_area", "Interest Area")
 
 
 func _add_row(grid: GridContainer, key: StringName, label_text: String) -> void:
@@ -204,6 +211,7 @@ func _refresh_stats() -> void:
 		_format_sync_rate(_player_sync_up_hz, _authority_player_count),
 		_format_sync_rate(_player_sync_down_hz, _remote_player_count),
 	])
+	_set_label(&"interest_area", _interest_area_text())
 
 
 func _scan_players() -> void:
@@ -225,9 +233,7 @@ func _track_player(player: Player) -> void:
 	if _tracked_players.has(id):
 		return
 
-	var replicator := player.get_node_or_null("FusionSharedReplicator") as FusionReplicator
-	if replicator == null:
-		return
+	var replicator := player.get_node("%FusionSharedReplicator") as FusionReplicator
 
 	var tracker := {
 		"player": player,
@@ -382,6 +388,43 @@ func _players_text() -> String:
 func _local_player_text() -> String:
 	var local_id := int(_safe_fusion_call(&"get_local_player_id"))
 	return str(local_id) if local_id > 0 else "-"
+
+
+func _toggle_player_interest_areas() -> void:
+	var player_parent := Game.instance.world if Game.instance != null else null
+	if player_parent == null:
+		return
+
+	var found_player := false
+	var next_enabled := false
+	for node in player_parent.get_children():
+		var player := node as Player
+		if player == null:
+			continue
+		if not found_player:
+			next_enabled = not player.interest_area_enabled
+			found_player = true
+		player.interest_area_enabled = next_enabled
+
+	if found_player:
+		_refresh_stats()
+
+
+func _interest_area_text() -> String:
+	var player_parent := Game.instance.world if Game.instance != null else null
+	if player_parent == null:
+		return "-"
+
+	var found_player := false
+	for node in player_parent.get_children():
+		var player := node as Player
+		if player == null:
+			continue
+		found_player = true
+		if player.interest_area_enabled:
+			return "On"
+
+	return "Off" if found_player else "-"
 
 
 func _safe_fusion_call(method: StringName) -> Variant:

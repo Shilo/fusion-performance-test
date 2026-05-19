@@ -22,7 +22,7 @@ var sync_probe: int:
 
 var has_authority: bool:
 	get:
-		return _has_authority_safe()
+		return %FusionSharedReplicator.has_authority()
 
 var _direction := Vector2.ZERO
 var _start_color := Color.WHITE
@@ -152,8 +152,3 @@ func _format_sync_direction_rate() -> String:
 		return "up %.1f Hz" % _sync_up_rate
 
 	return "down %.1f Hz" % _sync_down_rate
-
-
-func _has_authority_safe() -> bool:
-	var replicator := get_node_or_null("FusionSharedReplicator") as FusionReplicator
-	return replicator != null and replicator.has_authority()

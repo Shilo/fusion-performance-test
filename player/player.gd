@@ -2,8 +2,17 @@ class_name Player extends CharacterBody2D
 
 const GROUP_PLAYERS := "players"
 const MANUAL_SYNC_RATE_SAMPLE_INTERVAL := 1.0
+const INTEREST_MODE_GLOBAL := 0
+const INTEREST_MODE_AREA := 1
 
 @export var speed := 300.0
+
+var interest_area_enabled: bool:
+	set(value):
+		%FusionSharedReplicator.interest_mode = INTEREST_MODE_AREA if value else INTEREST_MODE_GLOBAL
+		%FusionInterestArea.enabled = value
+	get:
+		return %FusionInterestArea.enabled
 
 var manual_sync_probe: int:
 	set(value):
@@ -21,7 +30,7 @@ var extents: Vector2:
 
 var has_authority: bool:
 	get:
-		return _has_authority_safe()
+		return %FusionSharedReplicator.has_authority()
 
 var _manual_sync_probe := 0
 var _manual_sync_up_samples := 0
@@ -41,6 +50,11 @@ func _ready() -> void:
 	set_process(true)
 	set_physics_process(has_authority)
 	_update_call_rate_label()
+	
+	if has_authority:
+		interest_area_enabled = interest_area_enabled
+	else:
+		interest_area_enabled = false
 	
 	if has_authority:
 		modulate = Game.instance.random_color()
@@ -102,8 +116,3 @@ func _format_sync_direction_rate() -> String:
 		return "up %.1f Hz" % _manual_sync_up_rate
 
 	return "down %.1f Hz" % _manual_sync_down_rate
-
-
-func _has_authority_safe() -> bool:
-	var replicator := get_node_or_null("FusionSharedReplicator") as FusionReplicator
-	return replicator != null and replicator.has_authority()
