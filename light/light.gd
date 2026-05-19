@@ -28,6 +28,7 @@ func _joined() -> void:
 	Fusion.register_current_scene()
 	_on_authority_changed(%FusionSharedReplicator.has_authority())
 
+
 func _on_authority_changed(has_authority: bool) -> void:
 	set_process(has_authority)
 	%Collision.disabled = not has_authority
