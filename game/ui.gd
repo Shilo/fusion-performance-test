@@ -1,7 +1,7 @@
 class_name UI extends CanvasLayer
 
 const PLAYER_GROUP := "players"
-const SAMPLE_INTERVAL := 0.5
+const SAMPLE_INTERVAL := 1.0
 const PLAYER_SCAN_INTERVAL := 0.25
 const MOVEMENT_EPSILON_SQUARED := 0.0001
 const ROTATION_EPSILON := 0.0001
@@ -46,8 +46,7 @@ func _process(delta: float) -> void:
 		_player_sync_up_samples = 0
 		_player_sync_down_samples = 0
 		_sample_elapsed = 0.0
-
-	_refresh_stats()
+		_refresh_stats()
 
 
 func _physics_process(_delta: float) -> void:

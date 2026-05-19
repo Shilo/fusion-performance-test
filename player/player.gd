@@ -1,7 +1,7 @@
 class_name Player extends CharacterBody2D
 
 const GROUP_PLAYERS := "players"
-const MANUAL_SYNC_RATE_SAMPLE_INTERVAL := 0.5
+const MANUAL_SYNC_RATE_SAMPLE_INTERVAL := 1.0
 
 @export var speed := 300.0
 
@@ -40,6 +40,7 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	set_process(true)
 	set_physics_process(has_authority)
+	_update_call_rate_label()
 	
 	if has_authority:
 		modulate = Game.instance.random_color()
@@ -57,8 +58,7 @@ func _process(delta: float) -> void:
 		_manual_sync_get_calls = 0
 		_manual_sync_set_calls = 0
 		_manual_sync_rate_elapsed = 0.0
-
-	_update_call_rate_label()
+		_update_call_rate_label()
 
 
 func _physics_process(__) -> void:
