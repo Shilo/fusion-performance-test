@@ -32,7 +32,7 @@ func _on_connected() -> void:
 
 
 func _on_room_joined() -> void:
-	%FusionSpawner.spawn(null, func(player: Node2D) -> void:
+	%FusionSpawner.spawn(null, func(__, player: Player) -> void:
 		var bounds := get_player_spawn_bounds(player)
 		player.global_position = Vector2(
 			randf_range(bounds.position.x, bounds.end.x),
