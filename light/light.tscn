@@ -66,12 +66,12 @@ text = "id -
 local
 up 0.0 Hz"
 horizontal_alignment = 1
-vertical_alignment = 0
 
 [node name="FusionSharedReplicator" type="FusionSharedReplicator" parent="." unique_id=666305594]
 owner_mode = 3
 replication_config = SubResource("FusionReplicationConfig_pb6c2")
 root_replication_mode = 1
+root_smoothing = false
 unique_name_in_owner = true
 process_priority = -2147483647
 process_physics_priority = -2147483647

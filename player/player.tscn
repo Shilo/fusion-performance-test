@@ -47,6 +47,7 @@ shape = SubResource("CircleShape2D_rkbax")
 owner_mode = 1
 replication_config = SubResource("FusionReplicationConfig_rkbax")
 root_replication_mode = 1
+root_smoothing = false
 root_snap_distance = 100.0
 unique_name_in_owner = true
 process_priority = -2147483647
