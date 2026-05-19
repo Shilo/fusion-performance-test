@@ -44,8 +44,8 @@ var _sync_rate_elapsed := 0.0
 func _ready() -> void:
 	set_process(true)
 	Fusion.room_joined.connect(_joined)
+	Fusion.player_left.connect(_on_fusion_player_left)
 	%FusionSharedReplicator.authority_changed.connect(_on_authority_changed)
-	Fusion.player_left.connect(func(__, ___): _on_authority_changed(%FusionSharedReplicator.has_authority()))
 	_update_stats_label()
 
 
@@ -54,18 +54,22 @@ func _joined() -> void:
 	_on_authority_changed(%FusionSharedReplicator.has_authority())
 
 
-func _on_authority_changed(has_authority: bool) -> void:
-	var current_has_authority := int(has_authority)
+func _on_fusion_player_left(_player_id: int, _is_inactive: bool) -> void:
+	_on_authority_changed(has_authority)
+
+
+func _on_authority_changed(current_authority: bool) -> void:
+	var current_has_authority := int(current_authority)
 	if _last_has_authority == current_has_authority:
 		return
 
 	_last_has_authority = current_has_authority
 
 	set_process(true)
-	%Collision.disabled = not has_authority
+	%Collision.disabled = not current_authority
 	_update_stats_label()
 	
-	if not has_authority:
+	if not current_authority:
 		if body_entered.is_connected(_on_body_entered):
 			body_entered.disconnect(_on_body_entered)
 		return

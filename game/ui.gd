@@ -199,10 +199,7 @@ func _refresh_stats() -> void:
 		_format_microseconds_as_ms(_fusion_monitor("service_us")),
 		_format_microseconds_as_ms(_fusion_monitor("update_us")),
 	])
-	_set_label(&"rpc_probe", "Send %s\nReceive %s" % [
-		_format_hz(_rpc_probe_send_hz),
-		_format_hz(_rpc_probe_receive_hz),
-	])
+	_set_label(&"rpc_probe", _rpc_probe_text())
 	_set_label(&"player_sync", "Send %s\nReceive %s" % [
 		_format_sync_rate(_player_sync_up_hz, _authority_player_count),
 		_format_sync_rate(_player_sync_down_hz, _remote_player_count),
@@ -287,11 +284,13 @@ func _player_state_changed(player: Player, tracker: Dictionary) -> bool:
 	var last_position: Vector2 = tracker.get("last_position", player.global_position)
 	var last_velocity: Vector2 = tracker.get("last_velocity", player.velocity)
 	var last_rotation := float(tracker.get("last_rotation", player.global_rotation))
+	var last_manual_sync_probe := int(tracker.get("last_manual_sync_probe", player.manual_sync_probe))
 
 	return (
 		player.global_position.distance_squared_to(last_position) > MOVEMENT_EPSILON_SQUARED
 		or player.velocity.distance_squared_to(last_velocity) > MOVEMENT_EPSILON_SQUARED
 		or absf(angle_difference(player.global_rotation, last_rotation)) > ROTATION_EPSILON
+		or player.manual_sync_probe != last_manual_sync_probe
 	)
 
 
@@ -299,6 +298,7 @@ func _store_player_state(player: Player, tracker: Dictionary) -> void:
 	tracker["last_position"] = player.global_position
 	tracker["last_velocity"] = player.velocity
 	tracker["last_rotation"] = player.global_rotation
+	tracker["last_manual_sync_probe"] = player.manual_sync_probe
 
 
 func _send_rpc_probe(delta: float) -> void:
@@ -330,6 +330,15 @@ func _rpc_probe_sender_is_master() -> bool:
 		return false
 
 	return int(Fusion.get_rpc_sender()) == int(room.get_master_client_id())
+
+
+func _rpc_probe_text() -> String:
+	if not Fusion.is_in_room():
+		return "-"
+	if Fusion.is_master_client():
+		return "Send %s" % _format_hz(_rpc_probe_send_hz)
+
+	return "Receive %s" % _format_hz(_rpc_probe_receive_hz)
 
 
 func _connection_status_text() -> String:
@@ -410,7 +419,7 @@ func _format_microseconds_as_ms(value: float) -> String:
 
 func _format_duration(seconds: float) -> String:
 	var whole_seconds := maxi(0, int(roundf(seconds)))
-	var minutes := int(whole_seconds / 60)
+	var minutes := int(float(whole_seconds) / 60.0)
 	var remaining_seconds := whole_seconds % 60
 	if minutes > 0:
 		return "%dm %02ds" % [minutes, remaining_seconds]
