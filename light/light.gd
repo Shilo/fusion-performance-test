@@ -39,7 +39,6 @@ var _sync_down_samples := 0
 var _sync_up_rate := 0.0
 var _sync_down_rate := 0.0
 var _sync_rate_elapsed := 0.0
-var _rpc_sequence := 0
 var _rpc_send_elapsed := 0.0
 var _rpc_up_samples := 0
 var _rpc_down_samples := 0
@@ -148,13 +147,12 @@ func _send_rpc_probe(delta: float) -> void:
 	_rpc_send_elapsed += delta
 	while _rpc_send_elapsed >= LIGHT_RPC_INTERVAL:
 		_rpc_send_elapsed -= LIGHT_RPC_INTERVAL
-		_rpc_sequence += 1
 		_rpc_up_samples += 1
-		Fusion.rpc(rpc_light_probe, _rpc_sequence)
+		Fusion.rpc(rpc_light_probe)
 
 
 @rpc("authority", "call_remote", "unreliable_ordered")
-func rpc_light_probe(_sequence: int) -> void:
+func rpc_light_probe() -> void:
 	if has_authority:
 		return
 
