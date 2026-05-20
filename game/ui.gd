@@ -16,7 +16,21 @@ const MONITOR_METHODS := {
 	"update_us": &"_get_monitor_update_total_us",
 }
 
-var _labels := {}
+@onready var _labels := {
+	&"status": %StatusValue,
+	&"room": %RoomValue,
+	&"players": %PlayersValue,
+	&"local_player": %LocalPlayerValue,
+	&"rtt": %RttValue,
+	&"network_time": %NetworkTimeValue,
+	&"traffic": %TrafficValue,
+	&"fusion_sync": %FusionSyncValue,
+	&"fusion_loop": %FusionLoopValue,
+	&"rpc_probe": %RpcProbeValue,
+	&"player_sync": %PlayerSyncValue,
+	&"interest_area": %InterestAreaValue,
+}
+
 var _tracked_players := {}
 var _scan_elapsed := 0.0
 var _sample_elapsed := 0.0
@@ -36,7 +50,6 @@ var _rpc_probe_receive_hz := 0.0
 func _ready() -> void:
 	set_process_unhandled_input(true)
 	Fusion.register_broadcast_receiver(self)
-	_build_panel()
 	_scan_players()
 	_refresh_stats()
 
@@ -95,84 +108,6 @@ func _physics_process(_delta: float) -> void:
 			_store_player_state(player, tracker)
 
 		_tracked_players[id] = tracker
-
-
-func _build_panel() -> void:
-	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	margin.offset_left = 12.0
-	margin.offset_top = 12.0
-	add_child(margin)
-
-	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(360.0, 0.0)
-	margin.add_child(panel)
-
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.015, 0.018, 0.022, 0.78)
-	style.border_color = Color(0.25, 0.55, 0.9, 0.85)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
-	panel.add_theme_stylebox_override("panel", style)
-
-	var padding := MarginContainer.new()
-	padding.add_theme_constant_override("margin_left", 10)
-	padding.add_theme_constant_override("margin_top", 8)
-	padding.add_theme_constant_override("margin_right", 10)
-	padding.add_theme_constant_override("margin_bottom", 8)
-	panel.add_child(padding)
-
-	var layout := VBoxContainer.new()
-	layout.add_theme_constant_override("separation", 6)
-	padding.add_child(layout)
-
-	var title := Label.new()
-	title.text = "Network"
-	title.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	title.add_theme_font_size_override("font_size", 13)
-	title.add_theme_color_override("font_color", Color(0.82, 0.92, 1.0))
-	layout.add_child(title)
-
-	var grid := GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 12)
-	grid.add_theme_constant_override("v_separation", 3)
-	layout.add_child(grid)
-
-	_add_row(grid, &"status", "Status")
-	_add_row(grid, &"room", "Room")
-	_add_row(grid, &"players", "Players")
-	_add_row(grid, &"local_player", "My ID")
-	_add_row(grid, &"rtt", "RTT")
-	_add_row(grid, &"network_time", "Net Time")
-	_add_row(grid, &"traffic", "Traffic")
-	_add_row(grid, &"fusion_sync", "Sync Work")
-	_add_row(grid, &"fusion_loop", "Fusion Work")
-	_add_row(grid, &"rpc_probe", "RPC Sync")
-	_add_row(grid, &"player_sync", "Player Sync")
-	_add_row(grid, &"interest_area", "Interest Area")
-
-
-func _add_row(grid: GridContainer, key: StringName, label_text: String) -> void:
-	var name_label := Label.new()
-	name_label.text = label_text
-	name_label.custom_minimum_size.x = 112.0
-	name_label.size_flags_vertical = Control.SIZE_FILL
-	name_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	name_label.add_theme_font_size_override("font_size", 11)
-	name_label.add_theme_color_override("font_color", Color(0.55, 0.64, 0.72))
-	grid.add_child(name_label)
-
-	var value_label := Label.new()
-	value_label.text = "-"
-	value_label.custom_minimum_size.x = 210.0
-	value_label.size_flags_vertical = Control.SIZE_FILL
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	value_label.add_theme_font_size_override("font_size", 11)
-	value_label.add_theme_color_override("font_color", Color(0.92, 0.97, 1.0))
-	grid.add_child(value_label)
-	_labels[key] = value_label
 
 
 func _refresh_stats() -> void:
