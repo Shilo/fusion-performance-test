@@ -41,6 +41,8 @@ const MONITOR_METHODS := {
 }
 @onready var _network_margin: MarginContainer = %NetworkMargin
 @onready var _network_panel: PanelContainer = %NetworkPanel
+@onready var _toggle_margin: MarginContainer = %ToggleMargin
+@onready var _toggle_panel: PanelContainer = %TogglePanel
 @onready var _rpc_probe_receive_row := [
 	%RpcProbeReceiveLabel,
 	%RpcProbeReceiveValue,
@@ -68,6 +70,7 @@ var _rpc_probe_send_hz := 0.0
 var _rpc_probe_receive_hz := 0.0
 var _interest_area_enabled := false
 var _network_size_reset := false
+var _toggle_size_reset := false
 
 
 func _ready() -> void:
@@ -162,6 +165,9 @@ func _refresh_stats() -> void:
 	_set_label(&"room", _room_text())
 	_set_label(&"status", _connection_status_text())
 	_set_label(&"interest_area", _interest_area_text())
+	if not _toggle_size_reset:
+		_toggle_size_reset = true
+		_reset_toggle_size.call_deferred()
 
 
 func _scan_players() -> void:
@@ -436,7 +442,7 @@ func _action_shortcut_text(action: StringName) -> String:
 			continue
 
 		var keycode := key_event.physical_keycode if key_event.physical_keycode != KEY_NONE else key_event.keycode
-		var key_text := OS.get_keycode_string(keycode)
+		var key_text := OS.get_keycode_string(keycode) + " Key"
 		if key_text.is_empty():
 			continue
 
@@ -450,7 +456,7 @@ func _action_shortcut_text(action: StringName) -> String:
 		if key_event.meta_pressed:
 			parts.append("Meta")
 		parts.append(key_text)
-		return "+".join(parts)
+		return "(%s)" % "+".join(parts)
 
 	return "-"
 
@@ -474,3 +480,9 @@ func _reset_network_size() -> void:
 	_network_panel.size = Vector2.ZERO
 	_network_margin.size = Vector2.ZERO
 	_network_margin.reset_size()
+
+
+func _reset_toggle_size() -> void:
+	_toggle_panel.size = Vector2.ZERO
+	_toggle_margin.size = Vector2.ZERO
+	_toggle_margin.reset_size()
