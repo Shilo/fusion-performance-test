@@ -9,9 +9,8 @@ const SYNC_UPDATE_INTERVALS := [1, 2, 4, 8]
 const RPC_RATE_ROOM_PROPERTY := "rpc_probe_rate_hz"
 const RPC_PROBE_RATES_HZ := [15, 30, 60]
 const SMOOTHING_ROOM_PROPERTY := "smoothing_enabled"
-const ACTION_LABEL_COLOR := Color(0.58, 0.7, 0.78, 1)
-const ACTION_VALUE_COLOR := Color(0.9, 0.96, 1, 1)
-const ACTION_SHORTCUT_COLOR := Color(0.42, 0.6, 0.7, 1)
+const ACTION_BLUE_LABEL_COLOR := Color(0.18, 0.58, 0.68, 1)
+const ACTION_BLUE_VALUE_COLOR := Color(0.68, 0.98, 1, 1)
 const ACTION_DISABLED_COLOR := Color(0.32, 0.4, 0.45, 1)
 const ACTION_PANEL_MARGIN := 12.0
 const MOVEMENT_EPSILON_SQUARED := 0.0001
@@ -594,9 +593,9 @@ func _refresh_interest_area_action_row() -> void:
 		return
 
 	%InterestAreaShortcut.text = _action_shortcut_text(&"toggle_interest_area")
-	_set_label_color(%InterestAreaLabel, ACTION_LABEL_COLOR)
-	_set_label_color(%InterestAreaValue, ACTION_VALUE_COLOR)
-	_set_label_color(%InterestAreaShortcut, ACTION_SHORTCUT_COLOR)
+	_set_label_color(%InterestAreaLabel, ACTION_BLUE_LABEL_COLOR)
+	_set_label_color(%InterestAreaValue, ACTION_BLUE_VALUE_COLOR)
+	_set_label_color(%InterestAreaShortcut, ACTION_BLUE_LABEL_COLOR)
 
 
 func _sync_rate_text() -> String:
