@@ -52,7 +52,7 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.92, 1, 1)
 theme_override_font_sizes/font_size = 13
-text = "Net"
+text = "Network Statistics"
 
 [node name="StatsGrid" type="GridContainer" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout" unique_id=1606286011]
 layout_mode = 2
