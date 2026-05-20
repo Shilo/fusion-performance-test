@@ -13,6 +13,7 @@ const ACTION_LABEL_COLOR := Color(0.58, 0.7, 0.78, 1)
 const ACTION_VALUE_COLOR := Color(0.9, 0.96, 1, 1)
 const ACTION_SHORTCUT_COLOR := Color(0.42, 0.6, 0.7, 1)
 const ACTION_DISABLED_COLOR := Color(0.32, 0.4, 0.45, 1)
+const ACTION_PANEL_MARGIN := 12.0
 const MOVEMENT_EPSILON_SQUARED := 0.0001
 const ROTATION_EPSILON := 0.0001
 const MONITOR_METHODS := {
@@ -734,5 +735,13 @@ func _reset_network_size() -> void:
 
 func _reset_toggle_size() -> void:
 	_toggle_panel.size = Vector2.ZERO
+	_toggle_margin.anchor_left = 1.0
+	_toggle_margin.anchor_top = 0.0
+	_toggle_margin.anchor_right = 1.0
+	_toggle_margin.anchor_bottom = 0.0
+	_toggle_margin.offset_left = -ACTION_PANEL_MARGIN
+	_toggle_margin.offset_top = ACTION_PANEL_MARGIN
+	_toggle_margin.offset_right = -ACTION_PANEL_MARGIN
+	_toggle_margin.offset_bottom = ACTION_PANEL_MARGIN
 	_toggle_margin.size = Vector2.ZERO
 	_toggle_margin.reset_size()
