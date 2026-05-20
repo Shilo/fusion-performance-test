@@ -28,11 +28,11 @@ script = ExtResource("2_dyims")
 [node name="NetworkMargin" type="MarginContainer" parent="UI" unique_id=965502141]
 offset_left = 12.0
 offset_top = 12.0
-offset_right = 372.0
+offset_right = 284.0
 offset_bottom = 279.0
 
 [node name="NetworkPanel" type="PanelContainer" parent="UI/NetworkMargin" unique_id=189683258]
-custom_minimum_size = Vector2(360, 0)
+custom_minimum_size = Vector2(272, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_network_panel")
 
@@ -55,22 +55,22 @@ text = "Network"
 
 [node name="StatsGrid" type="GridContainer" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout" unique_id=1606286011]
 layout_mode = 2
-theme_override_constants/h_separation = 12
+theme_override_constants/h_separation = 3
 theme_override_constants/v_separation = 3
-columns = 2
+columns = 3
 
-[node name="StatusLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=458497230]
-custom_minimum_size = Vector2(112, 0)
+[node name="PlayerSyncLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1363366552]
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
 theme_override_font_sizes/font_size = 11
-text = "Status"
+text = "Player Sync"
 vertical_alignment = 0
 
-[node name="StatusValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=979222359]
+[node name="PlayerSyncReceiveValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
@@ -79,28 +79,291 @@ text = "-"
 horizontal_alignment = 2
 vertical_alignment = 0
 
-[node name="RoomLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=2124891546]
-custom_minimum_size = Vector2(112, 0)
+[node name="PlayerSyncReceiveSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
 theme_override_font_sizes/font_size = 11
-text = "Room"
+text = "Hz Receive"
 vertical_alignment = 0
 
-[node name="RoomValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1412723691]
+[node name="PlayerSyncSendLabelSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+
+[node name="PlayerSyncSendValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1491124693]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
 theme_override_font_sizes/font_size = 11
 text = "-"
 horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="PlayerSyncSendSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "Hz Send"
+vertical_alignment = 0
+
+[node name="RpcProbeReceiveLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "RPC Sync"
+vertical_alignment = 0
+
+[node name="RpcProbeReceiveValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="RpcProbeReceiveSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "Hz Receive"
+vertical_alignment = 0
+
+[node name="RpcProbeLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1531968256]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "RPC Sync"
+vertical_alignment = 0
+
+[node name="RpcProbeSendValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=720295637]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="RpcProbeSendSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "Hz Send"
+vertical_alignment = 0
+
+[node name="TrafficLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1547673459]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "Traffic"
+vertical_alignment = 0
+
+[node name="TrafficReceiveValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="TrafficReceiveSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "B/s Receive"
+vertical_alignment = 0
+
+[node name="TrafficSendLabelSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+
+[node name="TrafficSendValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1333174328]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="TrafficSendSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "B/s Send"
+vertical_alignment = 0
+
+[node name="FusionSyncLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1857576814]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "Sync Work"
+vertical_alignment = 0
+
+[node name="FusionSyncReceiveValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="FusionSyncReceiveSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "us Receive"
+vertical_alignment = 0
+
+[node name="FusionSyncSendLabelSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+
+[node name="FusionSyncSendValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1264198159]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="FusionSyncSendSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "us Send"
+vertical_alignment = 0
+
+[node name="FusionLoopLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=920696817]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "Fusion Work"
+vertical_alignment = 0
+
+[node name="FusionLoopNetworkValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=384563628]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="FusionLoopNetworkSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "us Network"
+vertical_alignment = 0
+
+[node name="FusionLoopUpdateLabelSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+
+[node name="FusionLoopUpdateValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="FusionLoopUpdateSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "us Update"
+vertical_alignment = 0
+
+[node name="RttLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1375595768]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "Round Trip Time"
+vertical_alignment = 0
+
+[node name="RttValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=191828428]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+vertical_alignment = 0
+
+[node name="RttSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
+theme_override_font_sizes/font_size = 11
+text = "ms"
 vertical_alignment = 0
 
 [node name="PlayersLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=104908690]
-custom_minimum_size = Vector2(112, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
@@ -110,7 +373,7 @@ vertical_alignment = 0
 
 [node name="PlayersValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=781011697]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
@@ -119,8 +382,12 @@ text = "-"
 horizontal_alignment = 2
 vertical_alignment = 0
 
+[node name="PlayersSuffixSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+
 [node name="LocalPlayerLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1813503945]
-custom_minimum_size = Vector2(112, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
@@ -130,7 +397,7 @@ vertical_alignment = 0
 
 [node name="LocalPlayerValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=280715797]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
@@ -139,28 +406,12 @@ text = "-"
 horizontal_alignment = 2
 vertical_alignment = 0
 
-[node name="RttLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1375595768]
-custom_minimum_size = Vector2(112, 0)
+[node name="LocalPlayerSuffixSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
-theme_override_font_sizes/font_size = 11
-text = "RTT"
-vertical_alignment = 0
-
-[node name="RttValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=191828428]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
-layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
-theme_override_font_sizes/font_size = 11
-text = "-"
-horizontal_alignment = 2
-vertical_alignment = 0
 
 [node name="NetworkTimeLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1896391667]
-custom_minimum_size = Vector2(112, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
@@ -170,7 +421,7 @@ vertical_alignment = 0
 
 [node name="NetworkTimeValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=939514096]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
@@ -179,38 +430,27 @@ text = "-"
 horizontal_alignment = 2
 vertical_alignment = 0
 
-[node name="TrafficLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1547673459]
-custom_minimum_size = Vector2(112, 0)
+[node name="NetworkTimeSuffix" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
 theme_override_font_sizes/font_size = 11
-text = "Traffic"
+text = "elapsed"
 vertical_alignment = 0
 
-[node name="TrafficValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1333174328]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
-layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
-theme_override_font_sizes/font_size = 11
-text = "-"
-horizontal_alignment = 2
-vertical_alignment = 0
-
-[node name="FusionSyncLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1857576814]
-custom_minimum_size = Vector2(112, 0)
+[node name="RoomLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=2124891546]
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
 theme_override_font_sizes/font_size = 11
-text = "Sync Work"
+text = "Room"
 vertical_alignment = 0
 
-[node name="FusionSyncValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1264198159]
+[node name="RoomValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1412723691]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
@@ -219,18 +459,22 @@ text = "-"
 horizontal_alignment = 2
 vertical_alignment = 0
 
-[node name="FusionLoopLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=920696817]
-custom_minimum_size = Vector2(112, 0)
+[node name="RoomSuffixSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=458497230]
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
 theme_override_font_sizes/font_size = 11
-text = "Fusion Work"
+text = "Status"
 vertical_alignment = 0
 
-[node name="FusionLoopValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=384563628]
+[node name="StatusValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=979222359]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
@@ -239,48 +483,12 @@ text = "-"
 horizontal_alignment = 2
 vertical_alignment = 0
 
-[node name="RpcProbeLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1531968256]
-custom_minimum_size = Vector2(112, 0)
+[node name="StatusSuffixSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
-theme_override_font_sizes/font_size = 11
-text = "RPC Sync"
-vertical_alignment = 0
-
-[node name="RpcProbeValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=720295637]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
-layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
-theme_override_font_sizes/font_size = 11
-text = "-"
-horizontal_alignment = 2
-vertical_alignment = 0
-
-[node name="PlayerSyncLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1363366552]
-custom_minimum_size = Vector2(112, 0)
-layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
-theme_override_font_sizes/font_size = 11
-text = "Player Sync"
-vertical_alignment = 0
-
-[node name="PlayerSyncValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1491124693]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
-layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
-theme_override_font_sizes/font_size = 11
-text = "-"
-horizontal_alignment = 2
-vertical_alignment = 0
 
 [node name="InterestAreaLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=403947371]
-custom_minimum_size = Vector2(112, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.55, 0.64, 0.72, 1)
@@ -290,7 +498,7 @@ vertical_alignment = 0
 
 [node name="InterestAreaValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=757778531]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 0)
+custom_minimum_size = Vector2(72, 0)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
@@ -298,6 +506,10 @@ theme_override_font_sizes/font_size = 11
 text = "-"
 horizontal_alignment = 2
 vertical_alignment = 0
+
+[node name="InterestAreaSuffixSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
 
 [node name="World" type="Node2D" parent="." unique_id=1808567696]
 unique_name_in_owner = true
