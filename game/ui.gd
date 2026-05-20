@@ -236,7 +236,9 @@ func _track_player(player: Player) -> void:
 	if _tracked_players.has(id):
 		return
 
-	var replicator := player.get_node("%FusionSharedReplicator") as FusionReplicator
+	var replicator := player.get_node_or_null("%FusionSharedReplicator") as FusionReplicator
+	if replicator == null:
+		return
 
 	var tracker := {
 		"player": player,
@@ -250,10 +252,7 @@ func _track_player(player: Player) -> void:
 	tracker["reset_callback"] = reset_callback
 
 	_tracked_players[id] = tracker
-	player.interest_area_enabled = _interest_area_enabled
-	if replicator != null:
-		replicator.set_update_interval(_sync_update_interval)
-		replicator.set_root_smoothing(_smoothing_enabled)
+	apply_player_network_settings(player)
 
 
 func _untrack_player(id: int) -> void:
@@ -405,12 +404,10 @@ func _toggle_player_interest_areas() -> void:
 	if _interest_area_toggle_locked:
 		return
 
-	var next_enabled := not _interest_area_enabled
 	if not Fusion.is_in_room():
-		_set_interest_area_enabled(next_enabled)
-		_lock_interest_area_toggle()
 		return
 
+	var next_enabled := not _interest_area_enabled
 	_store_interest_area_in_room(next_enabled)
 	Fusion.rpc(rpc_set_interest_area_enabled, next_enabled)
 	_lock_interest_area_toggle()
@@ -423,11 +420,10 @@ func rpc_set_interest_area_enabled(enabled: bool) -> void:
 
 
 func _toggle_sync_rate() -> void:
-	var next_interval := _next_sync_update_interval()
 	if not Fusion.is_in_room():
-		_set_sync_update_interval(next_interval)
 		return
 
+	var next_interval := _next_sync_update_interval()
 	_store_sync_rate_in_room(next_interval)
 	Fusion.rpc(rpc_set_sync_update_interval, next_interval)
 
@@ -438,11 +434,10 @@ func rpc_set_sync_update_interval(interval: int) -> void:
 
 
 func _toggle_rpc_rate() -> void:
-	var next_rate := _next_rpc_probe_rate()
 	if not Fusion.is_in_room():
-		_set_rpc_probe_rate(next_rate)
 		return
 
+	var next_rate := _next_rpc_probe_rate()
 	_store_rpc_rate_in_room(next_rate)
 	Fusion.rpc(rpc_set_rpc_probe_rate, next_rate)
 
@@ -453,11 +448,10 @@ func rpc_set_rpc_probe_rate(rate_hz: int) -> void:
 
 
 func _toggle_smoothing() -> void:
-	var next_enabled := not _smoothing_enabled
 	if not Fusion.is_in_room():
-		_set_smoothing_enabled(next_enabled)
 		return
 
+	var next_enabled := not _smoothing_enabled
 	_store_smoothing_in_room(next_enabled)
 	Fusion.rpc(rpc_set_smoothing_enabled, next_enabled)
 
@@ -544,9 +538,20 @@ func _set_interest_area_enabled(enabled: bool) -> void:
 		for node in player_parent.get_children():
 			var player := node as Player
 			if player != null:
-				player.interest_area_enabled = enabled
+				player.interest_area_enabled = enabled if player.has_authority else false
 
 	_refresh_stats()
+
+
+func apply_player_network_settings(player: Player) -> void:
+	player.interest_area_enabled = _interest_area_enabled if player.has_authority else false
+
+	var replicator := player.get_node_or_null("%FusionSharedReplicator") as FusionReplicator
+	if replicator == null:
+		return
+
+	replicator.set_update_interval(_sync_update_interval)
+	replicator.set_root_smoothing(_smoothing_enabled)
 
 
 func _set_sync_update_interval(interval: int) -> void:

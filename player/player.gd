@@ -9,6 +9,11 @@ const INTEREST_MODE_AREA := 1
 
 var interest_area_enabled: bool:
 	set(value):
+		if not has_authority:
+			%FusionSharedReplicator.interest_mode = INTEREST_MODE_GLOBAL
+			%FusionInterestArea.enabled = false
+			return
+
 		%FusionSharedReplicator.interest_mode = INTEREST_MODE_AREA if value else INTEREST_MODE_GLOBAL
 		%FusionInterestArea.enabled = value
 	get:

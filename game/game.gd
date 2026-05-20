@@ -4,13 +4,15 @@ static var instance: Game
 
 @export var player_scene: PackedScene
 @onready var world: Node2D = %World
+@onready var ui: UI = %UI
 
+var _world_bounds := Rect2()
 
 var world_bounds: Rect2:
 	get:
-		if world_bounds == Rect2():
-			world_bounds = get_viewport().get_visible_rect()
-		return world_bounds
+		if _world_bounds == Rect2():
+			_world_bounds = get_viewport().get_visible_rect()
+		return _world_bounds
 
 
 func _enter_tree() -> void:
@@ -45,6 +47,7 @@ func spawn_player() -> void:
 			randf_range(bounds.position.x, bounds.end.x),
 			randf_range(bounds.position.y, bounds.end.y)
 		)
+		ui.apply_player_network_settings(player)
 	)
 
 
