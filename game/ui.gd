@@ -6,6 +6,8 @@ const PLAYER_SCAN_INTERVAL := 0.25
 const RPC_PROBE_TARGET_HZ := 60.0
 const RPC_PROBE_INTERVAL := 1.0 / RPC_PROBE_TARGET_HZ
 const INTEREST_AREA_ROOM_PROPERTY := "interest_area_enabled"
+const SYNC_RATE_ROOM_PROPERTY := "sync_update_interval"
+const SYNC_UPDATE_INTERVALS := [1, 2, 4, 8]
 const MOVEMENT_EPSILON_SQUARED := 0.0001
 const ROTATION_EPSILON := 0.0001
 const MONITOR_METHODS := {
@@ -35,9 +37,11 @@ const MONITOR_METHODS := {
 	&"player_sync_receive": %PlayerSyncReceiveValue,
 	&"player_sync_send": %PlayerSyncSendValue,
 	&"interest_area": %InterestAreaValue,
+	&"sync_rate": %SyncRateValue,
 }
 @onready var _toggle_shortcuts := {
 	&"toggle_interest_area": %InterestAreaShortcut,
+	&"toggle_sync_rate": %SyncRateShortcut,
 }
 @onready var _network_margin: MarginContainer = %NetworkMargin
 @onready var _network_panel: PanelContainer = %NetworkPanel
@@ -69,6 +73,7 @@ var _rpc_probe_receive_samples := 0
 var _rpc_probe_send_hz := 0.0
 var _rpc_probe_receive_hz := 0.0
 var _interest_area_enabled := false
+var _sync_update_interval := 1
 var _network_size_reset := false
 var _toggle_size_reset := false
 
@@ -81,6 +86,7 @@ func _ready() -> void:
 	_scan_players()
 	if Fusion.is_in_room():
 		_sync_interest_area_from_room()
+		_sync_sync_rate_from_room()
 	_refresh_stats()
 
 
@@ -115,6 +121,9 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"toggle_interest_area"):
 		_toggle_player_interest_areas()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"toggle_sync_rate"):
+		_toggle_sync_rate()
 		get_viewport().set_input_as_handled()
 
 
@@ -165,6 +174,7 @@ func _refresh_stats() -> void:
 	_set_label(&"room", _room_text())
 	_set_label(&"status", _connection_status_text())
 	_set_label(&"interest_area", _interest_area_text())
+	_set_label(&"sync_rate", _sync_rate_text())
 	if not _toggle_size_reset:
 		_toggle_size_reset = true
 		_reset_toggle_size.call_deferred()
@@ -204,6 +214,8 @@ func _track_player(player: Player) -> void:
 
 	_tracked_players[id] = tracker
 	player.interest_area_enabled = _interest_area_enabled
+	if replicator != null:
+		replicator.set_update_interval(_sync_update_interval)
 
 
 func _untrack_player(id: int) -> void:
@@ -335,6 +347,7 @@ func _local_player_text() -> String:
 
 func _on_room_joined() -> void:
 	_sync_interest_area_from_room()
+	_sync_sync_rate_from_room()
 
 
 func _toggle_player_interest_areas() -> void:
@@ -352,6 +365,21 @@ func rpc_set_interest_area_enabled(enabled: bool) -> void:
 	_set_interest_area_enabled(enabled)
 
 
+func _toggle_sync_rate() -> void:
+	var next_interval := _next_sync_update_interval()
+	if not Fusion.is_in_room():
+		_set_sync_update_interval(next_interval)
+		return
+
+	_store_sync_rate_in_room(next_interval)
+	Fusion.rpc(rpc_set_sync_update_interval, next_interval)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_set_sync_update_interval(interval: int) -> void:
+	_set_sync_update_interval(interval)
+
+
 func _sync_interest_area_from_room() -> void:
 	var room: FusionRoom = Fusion.get_room()
 	if room == null:
@@ -362,10 +390,26 @@ func _sync_interest_area_from_room() -> void:
 		_set_interest_area_enabled(bool(custom_properties[INTEREST_AREA_ROOM_PROPERTY]))
 
 
+func _sync_sync_rate_from_room() -> void:
+	var room: FusionRoom = Fusion.get_room()
+	if room == null:
+		return
+
+	var custom_properties := room.get_custom_properties()
+	if custom_properties.has(SYNC_RATE_ROOM_PROPERTY):
+		_set_sync_update_interval(int(custom_properties[SYNC_RATE_ROOM_PROPERTY]))
+
+
 func _store_interest_area_in_room(enabled: bool) -> void:
 	var room: FusionRoom = Fusion.get_room()
 	if room != null:
 		room.set_property(INTEREST_AREA_ROOM_PROPERTY, enabled)
+
+
+func _store_sync_rate_in_room(interval: int) -> void:
+	var room: FusionRoom = Fusion.get_room()
+	if room != null:
+		room.set_property(SYNC_RATE_ROOM_PROPERTY, _normalize_sync_update_interval(interval))
 
 
 func _set_interest_area_enabled(enabled: bool) -> void:
@@ -380,8 +424,43 @@ func _set_interest_area_enabled(enabled: bool) -> void:
 	_refresh_stats()
 
 
+func _set_sync_update_interval(interval: int) -> void:
+	_sync_update_interval = _normalize_sync_update_interval(interval)
+	_apply_world_replicators(func(replicator: FusionReplicator) -> void:
+		replicator.set_update_interval(_sync_update_interval)
+	)
+	_refresh_stats()
+
+
 func _interest_area_text() -> String:
 	return "On" if _interest_area_enabled else "Off"
+
+
+func _sync_rate_text() -> String:
+	return str(_sync_update_interval)
+
+
+func _next_sync_update_interval() -> int:
+	var current_index := SYNC_UPDATE_INTERVALS.find(_sync_update_interval)
+	if current_index == -1:
+		return int(SYNC_UPDATE_INTERVALS[0])
+
+	return int(SYNC_UPDATE_INTERVALS[(current_index + 1) % SYNC_UPDATE_INTERVALS.size()])
+
+
+func _normalize_sync_update_interval(interval: int) -> int:
+	return interval if SYNC_UPDATE_INTERVALS.has(interval) else int(SYNC_UPDATE_INTERVALS[0])
+
+
+func _apply_world_replicators(callback: Callable) -> void:
+	var world := Game.instance.world if Game.instance != null else null
+	if world == null:
+		return
+
+	for node in world.get_children():
+		var replicator := node.get_node_or_null("%FusionSharedReplicator") as FusionReplicator
+		if replicator != null:
+			callback.call(replicator)
 
 
 func _safe_fusion_call(method: StringName) -> Variant:
