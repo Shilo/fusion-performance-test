@@ -64,7 +64,7 @@ theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 11
 text = "id -
 local
-up 0.0 Hz"
+0.0 Hz Send"
 horizontal_alignment = 1
 
 [node name="FusionSharedReplicator" type="FusionSharedReplicator" parent="." unique_id=666305594]

@@ -113,6 +113,6 @@ func _format_owner_id() -> String:
 
 func _format_sync_direction_rate() -> String:
 	if has_authority:
-		return "up %.1f Hz" % _manual_sync_up_rate
+		return "%.1f Hz Send" % _manual_sync_up_rate
 
-	return "down %.1f Hz" % _manual_sync_down_rate
+	return "%.1f Hz Receive" % _manual_sync_down_rate

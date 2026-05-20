@@ -5,6 +5,7 @@ const SAMPLE_INTERVAL := 1.0
 const PLAYER_SCAN_INTERVAL := 0.25
 const RPC_PROBE_TARGET_HZ := 60.0
 const RPC_PROBE_INTERVAL := 1.0 / RPC_PROBE_TARGET_HZ
+const SIMULATION_MODE_SETTING := "fusion/simulation/mode"
 const MOVEMENT_EPSILON_SQUARED := 0.0001
 const ROTATION_EPSILON := 0.0001
 const MONITOR_METHODS := {
@@ -23,6 +24,7 @@ const MONITOR_METHODS := {
 	&"local_player": %LocalPlayerValue,
 	&"rtt": %RttValue,
 	&"network_time": %NetworkTimeValue,
+	&"simulation_mode": %SimulationModeValue,
 	&"traffic_receive": %TrafficReceiveValue,
 	&"traffic_send": %TrafficSendValue,
 	&"fusion_sync_receive": %FusionSyncReceiveValue,
@@ -38,12 +40,14 @@ const MONITOR_METHODS := {
 @onready var _rpc_probe_receive_row := [
 	%RpcProbeReceiveLabel,
 	%RpcProbeReceiveValue,
-	%RpcProbeReceiveSuffix,
+	%RpcProbeReceiveUnit,
+	%RpcProbeReceiveDirection,
 ]
 @onready var _rpc_probe_send_row := [
 	%RpcProbeLabel,
 	%RpcProbeSendValue,
-	%RpcProbeSendSuffix,
+	%RpcProbeSendUnit,
+	%RpcProbeSendDirection,
 ]
 
 var _tracked_players := {}
@@ -144,6 +148,7 @@ func _refresh_stats() -> void:
 	_set_label(&"network_time", _format_duration_value(float(_safe_fusion_call(&"get_network_time"))))
 	_set_label(&"room", _room_text())
 	_set_label(&"status", _connection_status_text())
+	_set_label(&"simulation_mode", _simulation_mode_text())
 	_set_label(&"interest_area", _interest_area_text())
 
 
@@ -344,6 +349,27 @@ func _interest_area_text() -> String:
 			return "On"
 
 	return "Off" if found_player else "-"
+
+
+func _simulation_mode_text() -> String:
+	if ProjectSettings.has_setting(SIMULATION_MODE_SETTING):
+		return _format_simulation_mode(ProjectSettings.get_setting(SIMULATION_MODE_SETTING))
+
+	return _format_simulation_mode(_safe_fusion_call(&"get_simulation_mode"))
+
+
+func _format_simulation_mode(value: Variant) -> String:
+	match typeof(value):
+		TYPE_STRING, TYPE_STRING_NAME:
+			return str(value).capitalize()
+
+	match int(value):
+		FusionClient.SIMULATION_SHARED:
+			return "Shared"
+		FusionClient.SIMULATION_CLIENT_SERVER:
+			return "Client Server"
+		_:
+			return str(value)
 
 
 func _safe_fusion_call(method: StringName) -> Variant:
