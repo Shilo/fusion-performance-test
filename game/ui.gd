@@ -128,9 +128,10 @@ func _process(delta: float) -> void:
 		_scan_players()
 
 	if _sample_elapsed >= SAMPLE_INTERVAL:
-		var player_count := maxi(1, _tracked_players.size())
-		_player_sync_up_hz = _player_sync_up_samples / _sample_elapsed / player_count
-		_player_sync_down_hz = _player_sync_down_samples / _sample_elapsed / player_count
+		var local_player_count := maxi(1, _tracked_player_count(true))
+		var remote_player_count := maxi(1, _tracked_player_count(false))
+		_player_sync_up_hz = _player_sync_up_samples / _sample_elapsed / local_player_count
+		_player_sync_down_hz = _player_sync_down_samples / _sample_elapsed / remote_player_count
 		_rpc_probe_send_hz = _rpc_probe_send_samples / _sample_elapsed
 		_rpc_probe_receive_hz = _rpc_probe_receive_samples / _sample_elapsed
 		_player_sync_up_samples = 0
@@ -290,6 +291,16 @@ func _get_tracker_replicator(tracker: Dictionary) -> FusionReplicator:
 	if not is_instance_valid(replicator):
 		return null
 	return replicator as FusionReplicator
+
+
+func _tracked_player_count(authority: bool) -> int:
+	var count := 0
+	for tracker in _tracked_players.values():
+		var replicator := _get_tracker_replicator(tracker)
+		if replicator != null and replicator.has_authority() == authority:
+			count += 1
+
+	return count
 
 
 func _player_state_changed(player: Player, tracker: Dictionary) -> bool:
