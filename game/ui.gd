@@ -9,6 +9,10 @@ const SYNC_UPDATE_INTERVALS := [1, 2, 4, 8]
 const RPC_RATE_ROOM_PROPERTY := "rpc_probe_rate_hz"
 const RPC_PROBE_RATES_HZ := [15, 30, 60, 120]
 const SMOOTHING_ROOM_PROPERTY := "smoothing_enabled"
+const ACTION_LABEL_COLOR := Color(0.58, 0.7, 0.78, 1)
+const ACTION_VALUE_COLOR := Color(0.9, 0.96, 1, 1)
+const ACTION_SHORTCUT_COLOR := Color(0.42, 0.6, 0.7, 1)
+const ACTION_DISABLED_COLOR := Color(0.32, 0.4, 0.45, 1)
 const MOVEMENT_EPSILON_SQUARED := 0.0001
 const ROTATION_EPSILON := 0.0001
 const MONITOR_METHODS := {
@@ -66,6 +70,11 @@ const MONITOR_METHODS := {
 	%RpcProbeSendUnit,
 	%RpcProbeSendDirection,
 ]
+@onready var _interest_area_action_row := [
+	%InterestAreaLabel,
+	%InterestAreaValue,
+	%InterestAreaShortcut,
+]
 
 var _tracked_players := {}
 var _scan_elapsed := 0.0
@@ -80,6 +89,7 @@ var _rpc_probe_receive_samples := 0
 var _rpc_probe_send_hz := 0.0
 var _rpc_probe_receive_hz := 0.0
 var _interest_area_enabled := false
+var _interest_area_toggle_locked := false
 var _sync_update_interval := 1
 var _rpc_probe_rate_hz := 60
 var _smoothing_enabled := false
@@ -131,7 +141,8 @@ func _process(delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"toggle_interest_area"):
-		_toggle_player_interest_areas()
+		if not _interest_area_toggle_locked:
+			_toggle_player_interest_areas()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed(&"toggle_sync_rate"):
 		_toggle_sync_rate()
@@ -378,18 +389,24 @@ func _on_room_joined() -> void:
 
 
 func _toggle_player_interest_areas() -> void:
+	if _interest_area_toggle_locked:
+		return
+
 	var next_enabled := not _interest_area_enabled
 	if not Fusion.is_in_room():
 		_set_interest_area_enabled(next_enabled)
+		_lock_interest_area_toggle()
 		return
 
 	_store_interest_area_in_room(next_enabled)
 	Fusion.rpc(rpc_set_interest_area_enabled, next_enabled)
+	_lock_interest_area_toggle()
 
 
 @rpc("any_peer", "call_local", "reliable")
 func rpc_set_interest_area_enabled(enabled: bool) -> void:
 	_set_interest_area_enabled(enabled)
+	_lock_interest_area_toggle()
 
 
 func _toggle_sync_rate() -> void:
@@ -450,6 +467,7 @@ func _sync_interest_area_from_room() -> void:
 	var custom_properties := room.get_custom_properties()
 	if custom_properties.has(INTEREST_AREA_ROOM_PROPERTY):
 		_set_interest_area_enabled(bool(custom_properties[INTEREST_AREA_ROOM_PROPERTY]))
+		_lock_interest_area_toggle()
 
 
 func _sync_sync_rate_from_room() -> void:
@@ -544,6 +562,24 @@ func _interest_area_text() -> String:
 	return "On" if _interest_area_enabled else "Off"
 
 
+func _lock_interest_area_toggle() -> void:
+	_interest_area_toggle_locked = true
+	_refresh_interest_area_action_row()
+
+
+func _refresh_interest_area_action_row() -> void:
+	if _interest_area_toggle_locked:
+		%InterestAreaShortcut.text = "(Reload)"
+		for label in _interest_area_action_row:
+			_set_label_color(label, ACTION_DISABLED_COLOR)
+		return
+
+	%InterestAreaShortcut.text = _action_shortcut_text(&"toggle_interest_area")
+	_set_label_color(%InterestAreaLabel, ACTION_LABEL_COLOR)
+	_set_label_color(%InterestAreaValue, ACTION_VALUE_COLOR)
+	_set_label_color(%InterestAreaShortcut, ACTION_SHORTCUT_COLOR)
+
+
 func _sync_rate_text() -> String:
 	return str(_sync_update_interval)
 
@@ -636,10 +672,15 @@ func _set_label(key: StringName, value: String) -> void:
 		label.text = value
 
 
+func _set_label_color(label: Label, color: Color) -> void:
+	label.add_theme_color_override(&"font_color", color)
+
+
 func _refresh_toggle_shortcuts() -> void:
 	for action in _toggle_shortcuts.keys():
 		var label: Label = _toggle_shortcuts[action]
 		label.text = _action_shortcut_text(action)
+	_refresh_interest_area_action_row()
 
 
 func _action_shortcut_text(action: StringName) -> String:
