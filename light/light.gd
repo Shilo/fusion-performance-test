@@ -8,6 +8,7 @@ const DIAGONAL_DIRECTIONS := [
 ]
 
 const LIGHT_SYNC_RATE_SAMPLE_INTERVAL := 1.0
+const AUTHORITY_REFRESH_FRAMES_AFTER_PLAYER_LEFT := 60
 
 @export var speed := 300.0
 @export var color_change_duration := 0.3
@@ -37,6 +38,7 @@ var _sync_down_samples := 0
 var _sync_up_rate := 0.0
 var _sync_down_rate := 0.0
 var _sync_rate_elapsed := 0.0
+var _forced_authority_refresh_frames := 0
 
 @onready var _stats_label: Label = %StatsLabel
 
@@ -51,19 +53,26 @@ func _ready() -> void:
 
 func _joined() -> void:
 	Fusion.register_current_scene()
-	_on_authority_changed(%FusionSharedReplicator.has_authority())
+	_apply_authority(%FusionSharedReplicator.has_authority(), true)
 
 
 func _on_fusion_player_left(_player_id: int, _is_inactive: bool) -> void:
-	_on_authority_changed(has_authority)
+	_forced_authority_refresh_frames = AUTHORITY_REFRESH_FRAMES_AFTER_PLAYER_LEFT
+	_apply_authority(%FusionSharedReplicator.has_authority(), true)
 
 
 func _on_authority_changed(current_authority: bool) -> void:
+	_apply_authority(current_authority)
+
+
+func _apply_authority(current_authority: bool, force := false) -> void:
 	var current_has_authority := int(current_authority)
-	if _last_has_authority == current_has_authority:
+	var authority_changed := _last_has_authority != current_has_authority
+	if not authority_changed and not force:
 		return
 
-	_last_has_authority = current_has_authority
+	if authority_changed:
+		_last_has_authority = current_has_authority
 
 	set_process(true)
 	%Collision.disabled = not current_authority
@@ -74,15 +83,18 @@ func _on_authority_changed(current_authority: bool) -> void:
 			body_entered.disconnect(_on_body_entered)
 		return
 	
-	_current_color = Game.instance.random_color()
-	modulate = _current_color
 	if not body_entered.is_connected(_on_body_entered):
 		body_entered.connect(_on_body_entered)
 
-	_set_random_velocity()
+	if authority_changed:
+		_current_color = Game.instance.random_color()
+		modulate = _current_color
+		_set_random_velocity()
 
 
 func _process(delta: float) -> void:
+	_refresh_authority_after_player_left()
+
 	if has_authority:
 		sync_probe = _sync_probe + 1
 		_sync_up_samples += 1
@@ -106,6 +118,14 @@ func _process(delta: float) -> void:
 
 	if weight == 1.0:
 		_changing_color = false
+
+
+func _refresh_authority_after_player_left() -> void:
+	if _forced_authority_refresh_frames <= 0:
+		return
+
+	_forced_authority_refresh_frames -= 1
+	_apply_authority(%FusionSharedReplicator.has_authority(), true)
 
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
