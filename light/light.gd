@@ -84,7 +84,6 @@ func _apply_authority(current_authority: bool, force := false) -> void:
 		body_entered.connect(_on_body_entered)
 
 	if authority_changed:
-		sleeping = false
 		_current_color = Game.instance.random_color()
 		modulate = _current_color
 		_set_random_velocity()
