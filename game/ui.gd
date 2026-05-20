@@ -3,11 +3,11 @@ class_name UI extends CanvasLayer
 const PLAYER_GROUP := "players"
 const SAMPLE_INTERVAL := 1.0
 const PLAYER_SCAN_INTERVAL := 0.25
-const RPC_PROBE_TARGET_HZ := 60.0
-const RPC_PROBE_INTERVAL := 1.0 / RPC_PROBE_TARGET_HZ
 const INTEREST_AREA_ROOM_PROPERTY := "interest_area_enabled"
 const SYNC_RATE_ROOM_PROPERTY := "sync_update_interval"
 const SYNC_UPDATE_INTERVALS := [1, 2, 4, 8]
+const RPC_RATE_ROOM_PROPERTY := "rpc_probe_rate_hz"
+const RPC_PROBE_RATES_HZ := [15, 30, 60, 120]
 const MOVEMENT_EPSILON_SQUARED := 0.0001
 const ROTATION_EPSILON := 0.0001
 const MONITOR_METHODS := {
@@ -38,10 +38,12 @@ const MONITOR_METHODS := {
 	&"player_sync_send": %PlayerSyncSendValue,
 	&"interest_area": %InterestAreaValue,
 	&"sync_rate": %SyncRateValue,
+	&"rpc_rate": %RpcRateValue,
 }
 @onready var _toggle_shortcuts := {
 	&"toggle_interest_area": %InterestAreaShortcut,
 	&"toggle_sync_rate": %SyncRateShortcut,
+	&"toggle_rpc_rate": %RpcRateShortcut,
 }
 @onready var _network_margin: MarginContainer = %NetworkMargin
 @onready var _network_panel: PanelContainer = %NetworkPanel
@@ -74,6 +76,7 @@ var _rpc_probe_send_hz := 0.0
 var _rpc_probe_receive_hz := 0.0
 var _interest_area_enabled := false
 var _sync_update_interval := 1
+var _rpc_probe_rate_hz := 60
 var _network_size_reset := false
 var _toggle_size_reset := false
 
@@ -87,6 +90,7 @@ func _ready() -> void:
 	if Fusion.is_in_room():
 		_sync_interest_area_from_room()
 		_sync_sync_rate_from_room()
+		_sync_rpc_rate_from_room()
 	_refresh_stats()
 
 
@@ -124,6 +128,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed(&"toggle_sync_rate"):
 		_toggle_sync_rate()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"toggle_rpc_rate"):
+		_toggle_rpc_rate()
 		get_viewport().set_input_as_handled()
 
 
@@ -175,6 +182,7 @@ func _refresh_stats() -> void:
 	_set_label(&"status", _connection_status_text())
 	_set_label(&"interest_area", _interest_area_text())
 	_set_label(&"sync_rate", _sync_rate_text())
+	_set_label(&"rpc_rate", _rpc_rate_text())
 	if not _toggle_size_reset:
 		_toggle_size_reset = true
 		_reset_toggle_size.call_deferred()
@@ -282,8 +290,9 @@ func _send_rpc_probe(delta: float) -> void:
 		return
 
 	_rpc_probe_send_elapsed += delta
-	while _rpc_probe_send_elapsed >= RPC_PROBE_INTERVAL:
-		_rpc_probe_send_elapsed -= RPC_PROBE_INTERVAL
+	var rpc_probe_interval := 1.0 / float(_rpc_probe_rate_hz)
+	while _rpc_probe_send_elapsed >= rpc_probe_interval:
+		_rpc_probe_send_elapsed -= rpc_probe_interval
 		_rpc_probe_send_samples += 1
 		Fusion.rpc(rpc_probe)
 
@@ -348,6 +357,7 @@ func _local_player_text() -> String:
 func _on_room_joined() -> void:
 	_sync_interest_area_from_room()
 	_sync_sync_rate_from_room()
+	_sync_rpc_rate_from_room()
 
 
 func _toggle_player_interest_areas() -> void:
@@ -380,6 +390,21 @@ func rpc_set_sync_update_interval(interval: int) -> void:
 	_set_sync_update_interval(interval)
 
 
+func _toggle_rpc_rate() -> void:
+	var next_rate := _next_rpc_probe_rate()
+	if not Fusion.is_in_room():
+		_set_rpc_probe_rate(next_rate)
+		return
+
+	_store_rpc_rate_in_room(next_rate)
+	Fusion.rpc(rpc_set_rpc_probe_rate, next_rate)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_set_rpc_probe_rate(rate_hz: int) -> void:
+	_set_rpc_probe_rate(rate_hz)
+
+
 func _sync_interest_area_from_room() -> void:
 	var room: FusionRoom = Fusion.get_room()
 	if room == null:
@@ -400,6 +425,16 @@ func _sync_sync_rate_from_room() -> void:
 		_set_sync_update_interval(int(custom_properties[SYNC_RATE_ROOM_PROPERTY]))
 
 
+func _sync_rpc_rate_from_room() -> void:
+	var room: FusionRoom = Fusion.get_room()
+	if room == null:
+		return
+
+	var custom_properties := room.get_custom_properties()
+	if custom_properties.has(RPC_RATE_ROOM_PROPERTY):
+		_set_rpc_probe_rate(int(custom_properties[RPC_RATE_ROOM_PROPERTY]))
+
+
 func _store_interest_area_in_room(enabled: bool) -> void:
 	var room: FusionRoom = Fusion.get_room()
 	if room != null:
@@ -410,6 +445,12 @@ func _store_sync_rate_in_room(interval: int) -> void:
 	var room: FusionRoom = Fusion.get_room()
 	if room != null:
 		room.set_property(SYNC_RATE_ROOM_PROPERTY, _normalize_sync_update_interval(interval))
+
+
+func _store_rpc_rate_in_room(rate_hz: int) -> void:
+	var room: FusionRoom = Fusion.get_room()
+	if room != null:
+		room.set_property(RPC_RATE_ROOM_PROPERTY, _normalize_rpc_probe_rate(rate_hz))
 
 
 func _set_interest_area_enabled(enabled: bool) -> void:
@@ -432,12 +473,22 @@ func _set_sync_update_interval(interval: int) -> void:
 	_refresh_stats()
 
 
+func _set_rpc_probe_rate(rate_hz: int) -> void:
+	_rpc_probe_rate_hz = _normalize_rpc_probe_rate(rate_hz)
+	_rpc_probe_send_elapsed = 0.0
+	_refresh_stats()
+
+
 func _interest_area_text() -> String:
 	return "On" if _interest_area_enabled else "Off"
 
 
 func _sync_rate_text() -> String:
 	return str(_sync_update_interval)
+
+
+func _rpc_rate_text() -> String:
+	return "%d Hz" % _rpc_probe_rate_hz
 
 
 func _next_sync_update_interval() -> int:
@@ -450,6 +501,18 @@ func _next_sync_update_interval() -> int:
 
 func _normalize_sync_update_interval(interval: int) -> int:
 	return interval if SYNC_UPDATE_INTERVALS.has(interval) else int(SYNC_UPDATE_INTERVALS[0])
+
+
+func _next_rpc_probe_rate() -> int:
+	var current_index := RPC_PROBE_RATES_HZ.find(_rpc_probe_rate_hz)
+	if current_index == -1:
+		return int(RPC_PROBE_RATES_HZ[0])
+
+	return int(RPC_PROBE_RATES_HZ[(current_index + 1) % RPC_PROBE_RATES_HZ.size()])
+
+
+func _normalize_rpc_probe_rate(rate_hz: int) -> int:
+	return rate_hz if RPC_PROBE_RATES_HZ.has(rate_hz) else int(RPC_PROBE_RATES_HZ[0])
 
 
 func _apply_world_replicators(callback: Callable) -> void:
