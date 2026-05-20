@@ -5,7 +5,7 @@ const SAMPLE_INTERVAL := 1.0
 const PLAYER_SCAN_INTERVAL := 0.25
 const RPC_PROBE_TARGET_HZ := 60.0
 const RPC_PROBE_INTERVAL := 1.0 / RPC_PROBE_TARGET_HZ
-const SIMULATION_MODE_SETTING := "fusion/simulation/mode"
+const INTEREST_AREA_ROOM_PROPERTY := "interest_area_enabled"
 const MOVEMENT_EPSILON_SQUARED := 0.0001
 const ROTATION_EPSILON := 0.0001
 const MONITOR_METHODS := {
@@ -24,7 +24,6 @@ const MONITOR_METHODS := {
 	&"local_player": %LocalPlayerValue,
 	&"rtt": %RttValue,
 	&"network_time": %NetworkTimeValue,
-	&"simulation_mode": %SimulationModeValue,
 	&"traffic_receive": %TrafficReceiveValue,
 	&"traffic_send": %TrafficSendValue,
 	&"fusion_sync_receive": %FusionSyncReceiveValue,
@@ -38,7 +37,6 @@ const MONITOR_METHODS := {
 	&"interest_area": %InterestAreaValue,
 }
 @onready var _toggle_shortcuts := {
-	&"toggle_sim_mode": %SimulationModeShortcut,
 	&"toggle_interest_area": %InterestAreaShortcut,
 }
 @onready var _network_margin: MarginContainer = %NetworkMargin
@@ -68,18 +66,24 @@ var _rpc_probe_send_samples := 0
 var _rpc_probe_receive_samples := 0
 var _rpc_probe_send_hz := 0.0
 var _rpc_probe_receive_hz := 0.0
+var _interest_area_enabled := false
 var _network_size_reset := false
 
 
 func _ready() -> void:
 	set_process_unhandled_input(true)
 	_refresh_toggle_shortcuts()
+	Fusion.room_joined.connect(_on_room_joined)
 	Fusion.register_broadcast_receiver(self)
 	_scan_players()
+	if Fusion.is_in_room():
+		_sync_interest_area_from_room()
 	_refresh_stats()
 
 
 func _exit_tree() -> void:
+	if Fusion.room_joined.is_connected(_on_room_joined):
+		Fusion.room_joined.disconnect(_on_room_joined)
 	Fusion.unregister_broadcast_receiver(self)
 
 
@@ -106,10 +110,7 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"toggle_sim_mode"):
-		_toggle_simulation_mode()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed(&"toggle_interest_area"):
+	if event.is_action_pressed(&"toggle_interest_area"):
 		_toggle_player_interest_areas()
 		get_viewport().set_input_as_handled()
 
@@ -160,7 +161,6 @@ func _refresh_stats() -> void:
 	_set_label(&"network_time", _format_duration_value(float(_safe_fusion_call(&"get_network_time"))))
 	_set_label(&"room", _room_text())
 	_set_label(&"status", _connection_status_text())
-	_set_label(&"simulation_mode", _simulation_mode_text())
 	_set_label(&"interest_area", _interest_area_text())
 
 
@@ -197,6 +197,7 @@ func _track_player(player: Player) -> void:
 	tracker["reset_callback"] = reset_callback
 
 	_tracked_players[id] = tracker
+	player.interest_area_enabled = _interest_area_enabled
 
 
 func _untrack_player(id: int) -> void:
@@ -326,101 +327,55 @@ func _local_player_text() -> String:
 	return str(local_id) if local_id > 0 else "-"
 
 
+func _on_room_joined() -> void:
+	_sync_interest_area_from_room()
+
+
 func _toggle_player_interest_areas() -> void:
-	var player_parent := Game.instance.world if Game.instance != null else null
-	if player_parent == null:
+	var next_enabled := not _interest_area_enabled
+	if not Fusion.is_in_room():
+		_set_interest_area_enabled(next_enabled)
 		return
 
-	var found_player := false
-	var next_enabled := false
-	for node in player_parent.get_children():
-		var player := node as Player
-		if player == null:
-			continue
-		if not found_player:
-			next_enabled = not player.interest_area_enabled
-			found_player = true
-		player.interest_area_enabled = next_enabled
-
-	if found_player:
-		_refresh_stats()
+	_store_interest_area_in_room(next_enabled)
+	Fusion.rpc(rpc_set_interest_area_enabled, next_enabled)
 
 
-func _toggle_simulation_mode() -> void:
-	var current_mode := _simulation_mode_id(_current_simulation_mode_value())
-	var next_mode := FusionClient.SIMULATION_CLIENT_SERVER
-	if current_mode == FusionClient.SIMULATION_CLIENT_SERVER:
-		next_mode = FusionClient.SIMULATION_SHARED
+@rpc("any_peer", "call_local", "reliable")
+func rpc_set_interest_area_enabled(enabled: bool) -> void:
+	_set_interest_area_enabled(enabled)
 
-	ProjectSettings.set_setting(SIMULATION_MODE_SETTING, next_mode)
-	if Fusion.has_method(&"set_simulation_mode"):
-		Fusion.call(&"set_simulation_mode", next_mode)
+
+func _sync_interest_area_from_room() -> void:
+	var room: FusionRoom = Fusion.get_room()
+	if room == null:
+		return
+
+	var custom_properties := room.get_custom_properties()
+	if custom_properties.has(INTEREST_AREA_ROOM_PROPERTY):
+		_set_interest_area_enabled(bool(custom_properties[INTEREST_AREA_ROOM_PROPERTY]))
+
+
+func _store_interest_area_in_room(enabled: bool) -> void:
+	var room: FusionRoom = Fusion.get_room()
+	if room != null:
+		room.set_property(INTEREST_AREA_ROOM_PROPERTY, enabled)
+
+
+func _set_interest_area_enabled(enabled: bool) -> void:
+	_interest_area_enabled = enabled
+	var player_parent := Game.instance.world if Game.instance != null else null
+	if player_parent != null:
+		for node in player_parent.get_children():
+			var player := node as Player
+			if player != null:
+				player.interest_area_enabled = enabled
 
 	_refresh_stats()
 
 
 func _interest_area_text() -> String:
-	var player_parent := Game.instance.world if Game.instance != null else null
-	if player_parent == null:
-		return "-"
-
-	var found_player := false
-	for node in player_parent.get_children():
-		var player := node as Player
-		if player == null:
-			continue
-		found_player = true
-		if player.interest_area_enabled:
-			return "On"
-
-	return "Off" if found_player else "-"
-
-
-func _simulation_mode_text() -> String:
-	return _format_simulation_mode(_current_simulation_mode_value())
-
-
-func _format_simulation_mode(value: Variant) -> String:
-	match typeof(value):
-		TYPE_STRING, TYPE_STRING_NAME:
-			var mode_id := _simulation_mode_id(value)
-			if mode_id == FusionClient.SIMULATION_SHARED or mode_id == FusionClient.SIMULATION_CLIENT_SERVER:
-				return _format_simulation_mode(mode_id)
-			return str(value).capitalize()
-
-	match int(value):
-		FusionClient.SIMULATION_SHARED:
-			return "Shared"
-		FusionClient.SIMULATION_CLIENT_SERVER:
-			return "Client Server"
-		_:
-			return str(value)
-
-
-func _current_simulation_mode_value() -> Variant:
-	if ProjectSettings.has_setting(SIMULATION_MODE_SETTING):
-		return ProjectSettings.get_setting(SIMULATION_MODE_SETTING)
-
-	return _safe_fusion_call(&"get_simulation_mode")
-
-
-func _simulation_mode_id(value: Variant) -> int:
-	match typeof(value):
-		TYPE_INT:
-			return int(value)
-		TYPE_FLOAT:
-			return int(value)
-		TYPE_STRING, TYPE_STRING_NAME:
-			var normalized := str(value).strip_edges().to_lower()
-			normalized = normalized.replace("_", " ").replace("-", " ")
-			normalized = normalized.replace("clientserver", "client server")
-			match normalized:
-				"shared":
-					return FusionClient.SIMULATION_SHARED
-				"client server":
-					return FusionClient.SIMULATION_CLIENT_SERVER
-
-	return -1
+	return "On" if _interest_area_enabled else "Off"
 
 
 func _safe_fusion_call(method: StringName) -> Variant:
