@@ -8,7 +8,6 @@ const DIAGONAL_DIRECTIONS := [
 ]
 
 const LIGHT_SYNC_RATE_SAMPLE_INTERVAL := 1.0
-const AUTHORITY_REFRESH_FRAMES_AFTER_PLAYER_LEFT := 60
 
 @export var speed := 300.0
 @export var color_change_duration := 0.3
@@ -38,16 +37,15 @@ var _sync_down_samples := 0
 var _sync_up_rate := 0.0
 var _sync_down_rate := 0.0
 var _sync_rate_elapsed := 0.0
-var _forced_authority_refresh_frames := 0
 
 @onready var _stats_label: Label = %StatsLabel
 
 
 func _ready() -> void:
 	set_process(true)
-	Fusion.room_joined.connect(_joined)
-	Fusion.player_left.connect(_on_fusion_player_left)
-	%FusionSharedReplicator.authority_changed.connect(_on_authority_changed)
+	Fusion.room_joined.connect(_joined, ConnectFlags.CONNECT_DEFERRED)
+	Fusion.player_left.connect(_on_fusion_player_left, ConnectFlags.CONNECT_DEFERRED)
+	%FusionSharedReplicator.authority_changed.connect(_on_authority_changed, ConnectFlags.CONNECT_DEFERRED)
 	_update_stats_label()
 
 
@@ -57,7 +55,6 @@ func _joined() -> void:
 
 
 func _on_fusion_player_left(_player_id: int, _is_inactive: bool) -> void:
-	_forced_authority_refresh_frames = AUTHORITY_REFRESH_FRAMES_AFTER_PLAYER_LEFT
 	_apply_authority(%FusionSharedReplicator.has_authority(), true)
 
 
@@ -93,8 +90,6 @@ func _apply_authority(current_authority: bool, force := false) -> void:
 
 
 func _process(delta: float) -> void:
-	_refresh_authority_after_player_left()
-
 	if has_authority:
 		sync_probe = _sync_probe + 1
 		_sync_up_samples += 1
@@ -118,14 +113,6 @@ func _process(delta: float) -> void:
 
 	if weight == 1.0:
 		_changing_color = false
-
-
-func _refresh_authority_after_player_left() -> void:
-	if _forced_authority_refresh_frames <= 0:
-		return
-
-	_forced_authority_refresh_frames -= 1
-	_apply_authority(%FusionSharedReplicator.has_authority(), true)
 
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
