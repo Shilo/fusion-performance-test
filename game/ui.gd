@@ -8,6 +8,7 @@ const SYNC_RATE_ROOM_PROPERTY := "sync_update_interval"
 const SYNC_UPDATE_INTERVALS := [1, 2, 4, 8]
 const RPC_RATE_ROOM_PROPERTY := "rpc_probe_rate_hz"
 const RPC_PROBE_RATES_HZ := [15, 30, 60, 120]
+const SMOOTHING_ROOM_PROPERTY := "smoothing_enabled"
 const MOVEMENT_EPSILON_SQUARED := 0.0001
 const ROTATION_EPSILON := 0.0001
 const MONITOR_METHODS := {
@@ -39,11 +40,13 @@ const MONITOR_METHODS := {
 	&"interest_area": %InterestAreaValue,
 	&"sync_rate": %SyncRateValue,
 	&"rpc_rate": %RpcRateValue,
+	&"smoothing": %SmoothingValue,
 }
 @onready var _toggle_shortcuts := {
 	&"toggle_interest_area": %InterestAreaShortcut,
 	&"toggle_sync_rate": %SyncRateShortcut,
 	&"toggle_rpc_rate": %RpcRateShortcut,
+	&"toggle_smoothing": %SmoothingShortcut,
 }
 @onready var _network_margin: MarginContainer = %NetworkMargin
 @onready var _network_panel: PanelContainer = %NetworkPanel
@@ -77,6 +80,7 @@ var _rpc_probe_receive_hz := 0.0
 var _interest_area_enabled := false
 var _sync_update_interval := 1
 var _rpc_probe_rate_hz := 60
+var _smoothing_enabled := false
 var _network_size_reset := false
 var _toggle_size_reset := false
 
@@ -91,6 +95,7 @@ func _ready() -> void:
 		_sync_interest_area_from_room()
 		_sync_sync_rate_from_room()
 		_sync_rpc_rate_from_room()
+		_sync_smoothing_from_room()
 	_refresh_stats()
 
 
@@ -131,6 +136,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed(&"toggle_rpc_rate"):
 		_toggle_rpc_rate()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"toggle_smoothing"):
+		_toggle_smoothing()
 		get_viewport().set_input_as_handled()
 
 
@@ -183,6 +191,7 @@ func _refresh_stats() -> void:
 	_set_label(&"interest_area", _interest_area_text())
 	_set_label(&"sync_rate", _sync_rate_text())
 	_set_label(&"rpc_rate", _rpc_rate_text())
+	_set_label(&"smoothing", _smoothing_text())
 	if not _toggle_size_reset:
 		_toggle_size_reset = true
 		_reset_toggle_size.call_deferred()
@@ -224,6 +233,7 @@ func _track_player(player: Player) -> void:
 	player.interest_area_enabled = _interest_area_enabled
 	if replicator != null:
 		replicator.set_update_interval(_sync_update_interval)
+		replicator.set_root_smoothing(_smoothing_enabled)
 
 
 func _untrack_player(id: int) -> void:
@@ -358,6 +368,7 @@ func _on_room_joined() -> void:
 	_sync_interest_area_from_room()
 	_sync_sync_rate_from_room()
 	_sync_rpc_rate_from_room()
+	_sync_smoothing_from_room()
 
 
 func _toggle_player_interest_areas() -> void:
@@ -405,6 +416,21 @@ func rpc_set_rpc_probe_rate(rate_hz: int) -> void:
 	_set_rpc_probe_rate(rate_hz)
 
 
+func _toggle_smoothing() -> void:
+	var next_enabled := not _smoothing_enabled
+	if not Fusion.is_in_room():
+		_set_smoothing_enabled(next_enabled)
+		return
+
+	_store_smoothing_in_room(next_enabled)
+	Fusion.rpc(rpc_set_smoothing_enabled, next_enabled)
+
+
+@rpc("any_peer", "call_local", "reliable")
+func rpc_set_smoothing_enabled(enabled: bool) -> void:
+	_set_smoothing_enabled(enabled)
+
+
 func _sync_interest_area_from_room() -> void:
 	var room: FusionRoom = Fusion.get_room()
 	if room == null:
@@ -435,6 +461,16 @@ func _sync_rpc_rate_from_room() -> void:
 		_set_rpc_probe_rate(int(custom_properties[RPC_RATE_ROOM_PROPERTY]))
 
 
+func _sync_smoothing_from_room() -> void:
+	var room: FusionRoom = Fusion.get_room()
+	if room == null:
+		return
+
+	var custom_properties := room.get_custom_properties()
+	if custom_properties.has(SMOOTHING_ROOM_PROPERTY):
+		_set_smoothing_enabled(bool(custom_properties[SMOOTHING_ROOM_PROPERTY]))
+
+
 func _store_interest_area_in_room(enabled: bool) -> void:
 	var room: FusionRoom = Fusion.get_room()
 	if room != null:
@@ -451,6 +487,12 @@ func _store_rpc_rate_in_room(rate_hz: int) -> void:
 	var room: FusionRoom = Fusion.get_room()
 	if room != null:
 		room.set_property(RPC_RATE_ROOM_PROPERTY, _normalize_rpc_probe_rate(rate_hz))
+
+
+func _store_smoothing_in_room(enabled: bool) -> void:
+	var room: FusionRoom = Fusion.get_room()
+	if room != null:
+		room.set_property(SMOOTHING_ROOM_PROPERTY, enabled)
 
 
 func _set_interest_area_enabled(enabled: bool) -> void:
@@ -479,6 +521,14 @@ func _set_rpc_probe_rate(rate_hz: int) -> void:
 	_refresh_stats()
 
 
+func _set_smoothing_enabled(enabled: bool) -> void:
+	_smoothing_enabled = enabled
+	_apply_world_replicators(func(replicator: FusionReplicator) -> void:
+		replicator.set_root_smoothing(enabled)
+	)
+	_refresh_stats()
+
+
 func _interest_area_text() -> String:
 	return "On" if _interest_area_enabled else "Off"
 
@@ -489,6 +539,10 @@ func _sync_rate_text() -> String:
 
 func _rpc_rate_text() -> String:
 	return "%d Hz" % _rpc_probe_rate_hz
+
+
+func _smoothing_text() -> String:
+	return "On" if _smoothing_enabled else "Off"
 
 
 func _next_sync_update_interval() -> int:
