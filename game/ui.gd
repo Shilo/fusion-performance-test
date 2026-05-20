@@ -566,6 +566,7 @@ func _interest_area_text() -> String:
 func _lock_interest_area_toggle() -> void:
 	_interest_area_toggle_locked = true
 	_refresh_interest_area_action_row()
+	_reset_toggle_size.call_deferred()
 
 
 func _refresh_interest_area_action_row() -> void:
