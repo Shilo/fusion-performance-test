@@ -37,6 +37,10 @@ const MONITOR_METHODS := {
 	&"player_sync_send": %PlayerSyncSendValue,
 	&"interest_area": %InterestAreaValue,
 }
+@onready var _toggle_shortcuts := {
+	&"toggle_sim_mode": %SimulationModeShortcut,
+	&"toggle_interest_area": %InterestAreaShortcut,
+}
 @onready var _network_margin: MarginContainer = %NetworkMargin
 @onready var _network_panel: PanelContainer = %NetworkPanel
 @onready var _rpc_probe_receive_row := [
@@ -69,6 +73,7 @@ var _network_size_reset := false
 
 func _ready() -> void:
 	set_process_unhandled_input(true)
+	_refresh_toggle_shortcuts()
 	Fusion.register_broadcast_receiver(self)
 	_scan_players()
 	_refresh_stats()
@@ -101,8 +106,12 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"ui_select"):
+	if event.is_action_pressed(&"toggle_sim_mode"):
+		_toggle_simulation_mode()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"toggle_interest_area"):
 		_toggle_player_interest_areas()
+		get_viewport().set_input_as_handled()
 
 
 func _physics_process(_delta: float) -> void:
@@ -337,6 +346,19 @@ func _toggle_player_interest_areas() -> void:
 		_refresh_stats()
 
 
+func _toggle_simulation_mode() -> void:
+	var current_mode := _simulation_mode_id(_current_simulation_mode_value())
+	var next_mode := FusionClient.SIMULATION_CLIENT_SERVER
+	if current_mode == FusionClient.SIMULATION_CLIENT_SERVER:
+		next_mode = FusionClient.SIMULATION_SHARED
+
+	ProjectSettings.set_setting(SIMULATION_MODE_SETTING, next_mode)
+	if Fusion.has_method(&"set_simulation_mode"):
+		Fusion.call(&"set_simulation_mode", next_mode)
+
+	_refresh_stats()
+
+
 func _interest_area_text() -> String:
 	var player_parent := Game.instance.world if Game.instance != null else null
 	if player_parent == null:
@@ -355,15 +377,15 @@ func _interest_area_text() -> String:
 
 
 func _simulation_mode_text() -> String:
-	if ProjectSettings.has_setting(SIMULATION_MODE_SETTING):
-		return _format_simulation_mode(ProjectSettings.get_setting(SIMULATION_MODE_SETTING))
-
-	return _format_simulation_mode(_safe_fusion_call(&"get_simulation_mode"))
+	return _format_simulation_mode(_current_simulation_mode_value())
 
 
 func _format_simulation_mode(value: Variant) -> String:
 	match typeof(value):
 		TYPE_STRING, TYPE_STRING_NAME:
+			var mode_id := _simulation_mode_id(value)
+			if mode_id == FusionClient.SIMULATION_SHARED or mode_id == FusionClient.SIMULATION_CLIENT_SERVER:
+				return _format_simulation_mode(mode_id)
 			return str(value).capitalize()
 
 	match int(value):
@@ -373,6 +395,32 @@ func _format_simulation_mode(value: Variant) -> String:
 			return "Client Server"
 		_:
 			return str(value)
+
+
+func _current_simulation_mode_value() -> Variant:
+	if ProjectSettings.has_setting(SIMULATION_MODE_SETTING):
+		return ProjectSettings.get_setting(SIMULATION_MODE_SETTING)
+
+	return _safe_fusion_call(&"get_simulation_mode")
+
+
+func _simulation_mode_id(value: Variant) -> int:
+	match typeof(value):
+		TYPE_INT:
+			return int(value)
+		TYPE_FLOAT:
+			return int(value)
+		TYPE_STRING, TYPE_STRING_NAME:
+			var normalized := str(value).strip_edges().to_lower()
+			normalized = normalized.replace("_", " ").replace("-", " ")
+			normalized = normalized.replace("clientserver", "client server")
+			match normalized:
+				"shared":
+					return FusionClient.SIMULATION_SHARED
+				"client server":
+					return FusionClient.SIMULATION_CLIENT_SERVER
+
+	return -1
 
 
 func _safe_fusion_call(method: StringName) -> Variant:
@@ -418,6 +466,38 @@ func _set_label(key: StringName, value: String) -> void:
 	var label: Label = _values.get(key)
 	if label != null:
 		label.text = value
+
+
+func _refresh_toggle_shortcuts() -> void:
+	for action in _toggle_shortcuts.keys():
+		var label: Label = _toggle_shortcuts[action]
+		label.text = _action_shortcut_text(action)
+
+
+func _action_shortcut_text(action: StringName) -> String:
+	for event in InputMap.action_get_events(action):
+		var key_event := event as InputEventKey
+		if key_event == null:
+			continue
+
+		var keycode := key_event.physical_keycode if key_event.physical_keycode != KEY_NONE else key_event.keycode
+		var key_text := OS.get_keycode_string(keycode)
+		if key_text.is_empty():
+			continue
+
+		var parts := PackedStringArray()
+		if key_event.ctrl_pressed:
+			parts.append("Ctrl")
+		if key_event.alt_pressed:
+			parts.append("Alt")
+		if key_event.shift_pressed and keycode != KEY_SHIFT:
+			parts.append("Shift")
+		if key_event.meta_pressed:
+			parts.append("Meta")
+		parts.append(key_text)
+		return "+".join(parts)
+
+	return "-"
 
 
 func _refresh_rpc_probe_rows(is_in_room: bool, is_master: bool) -> void:

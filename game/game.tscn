@@ -496,35 +496,10 @@ layout_mode = 2
 [node name="LocalPlayerDirectionSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1577248740]
 layout_mode = 2
 
-[node name="SimulationModeLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=240143947]
-layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.7, 0.28, 0.24, 1)
-theme_override_font_sizes/font_size = 11
-text = "Sim Mode"
-
-[node name="SimulationModeValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=160650351]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(48, 0)
-layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(1, 0.82, 0.76, 1)
-theme_override_font_sizes/font_size = 11
-text = "-"
-horizontal_alignment = 2
-clip_text = true
-text_overrun_behavior = 3
-
-[node name="SimulationModeUnitSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1717914395]
-layout_mode = 2
-
-[node name="SimulationModeDirectionSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1304836208]
-layout_mode = 2
-
 [node name="RoomLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=2124891546]
 layout_mode = 2
 size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.18, 0.58, 0.68, 1)
+theme_override_colors/font_color = Color(0.7, 0.28, 0.24, 1)
 theme_override_font_sizes/font_size = 11
 text = "Room"
 
@@ -533,7 +508,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(48, 0)
 layout_mode = 2
 size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.68, 0.98, 1, 1)
+theme_override_colors/font_color = Color(1, 0.82, 0.76, 1)
 theme_override_font_sizes/font_size = 11
 text = "-"
 horizontal_alignment = 2
@@ -549,7 +524,7 @@ layout_mode = 2
 [node name="StatusLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=458497230]
 layout_mode = 2
 size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.7, 0.28, 0.24, 1)
+theme_override_colors/font_color = Color(0.18, 0.58, 0.68, 1)
 theme_override_font_sizes/font_size = 11
 text = "Status"
 
@@ -558,7 +533,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(48, 0)
 layout_mode = 2
 size_flags_vertical = 1
-theme_override_colors/font_color = Color(1, 0.82, 0.76, 1)
+theme_override_colors/font_color = Color(0.68, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 11
 text = "-"
 horizontal_alignment = 2
@@ -571,30 +546,98 @@ layout_mode = 2
 [node name="StatusDirectionSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1080772266]
 layout_mode = 2
 
-[node name="InterestAreaLabel" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=403947371]
-layout_mode = 2
-size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.18, 0.58, 0.68, 1)
-theme_override_font_sizes/font_size = 11
-text = "Interest Area"
-
-[node name="InterestAreaValue" type="Label" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=757778531]
+[node name="ToggleMargin" type="MarginContainer" parent="UI" unique_id=1942668325]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(48, 0)
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -222.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 90.0
+grow_horizontal = 0
+
+[node name="TogglePanel" type="PanelContainer" parent="UI/ToggleMargin" unique_id=1210805685]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_network_panel")
+
+[node name="TogglePadding" type="MarginContainer" parent="UI/ToggleMargin/TogglePanel" unique_id=1812417995]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="ToggleLayout" type="VBoxContainer" parent="UI/ToggleMargin/TogglePanel/TogglePadding" unique_id=2023551108]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ToggleTitle" type="Label" parent="UI/ToggleMargin/TogglePanel/TogglePadding/ToggleLayout" unique_id=338209677]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Actions"
+
+[node name="ActionGrid" type="GridContainer" parent="UI/ToggleMargin/TogglePanel/TogglePadding/ToggleLayout" unique_id=1849004819]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 3
+columns = 3
+
+[node name="SimulationModeLabel" type="Label" parent="UI/ToggleMargin/TogglePanel/TogglePadding/ToggleLayout/ActionGrid" unique_id=240143947]
 layout_mode = 2
 size_flags_vertical = 1
-theme_override_colors/font_color = Color(0.68, 0.98, 1, 1)
+theme_override_colors/font_color = Color(0.58, 0.7, 0.78, 1)
+theme_override_font_sizes/font_size = 11
+text = "Sim Mode"
+
+[node name="SimulationModeValue" type="Label" parent="UI/ToggleMargin/TogglePanel/TogglePadding/ToggleLayout/ActionGrid" unique_id=160650351]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(76, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.9, 0.96, 1, 1)
 theme_override_font_sizes/font_size = 11
 text = "-"
 horizontal_alignment = 2
 clip_text = true
 text_overrun_behavior = 3
 
-[node name="InterestAreaUnitSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=1303386221]
+[node name="SimulationModeShortcut" type="Label" parent="UI/ToggleMargin/TogglePanel/TogglePadding/ToggleLayout/ActionGrid" unique_id=1818505737]
+unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.42, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "Shift"
+horizontal_alignment = 2
 
-[node name="InterestAreaDirectionSpacer" type="Control" parent="UI/NetworkMargin/NetworkPanel/NetworkPadding/NetworkLayout/StatsGrid" unique_id=246615086]
+[node name="InterestAreaLabel" type="Label" parent="UI/ToggleMargin/TogglePanel/TogglePadding/ToggleLayout/ActionGrid" unique_id=403947371]
 layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.58, 0.7, 0.78, 1)
+theme_override_font_sizes/font_size = 11
+text = "Interest Area"
+
+[node name="InterestAreaValue" type="Label" parent="UI/ToggleMargin/TogglePanel/TogglePadding/ToggleLayout/ActionGrid" unique_id=757778531]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(76, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.9, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "-"
+horizontal_alignment = 2
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="InterestAreaShortcut" type="Label" parent="UI/ToggleMargin/TogglePanel/TogglePadding/ToggleLayout/ActionGrid" unique_id=1538123866]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.42, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "Space"
+horizontal_alignment = 2
 
 [node name="World" type="Node2D" parent="." unique_id=1808567696]
 unique_name_in_owner = true
