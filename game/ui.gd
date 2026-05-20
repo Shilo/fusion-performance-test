@@ -37,6 +37,8 @@ const MONITOR_METHODS := {
 	&"player_sync_send": %PlayerSyncSendValue,
 	&"interest_area": %InterestAreaValue,
 }
+@onready var _network_margin: MarginContainer = %NetworkMargin
+@onready var _network_panel: PanelContainer = %NetworkPanel
 @onready var _rpc_probe_receive_row := [
 	%RpcProbeReceiveLabel,
 	%RpcProbeReceiveValue,
@@ -62,6 +64,7 @@ var _rpc_probe_send_samples := 0
 var _rpc_probe_receive_samples := 0
 var _rpc_probe_send_hz := 0.0
 var _rpc_probe_receive_hz := 0.0
+var _network_size_reset := false
 
 
 func _ready() -> void:
@@ -420,6 +423,9 @@ func _set_label(key: StringName, value: String) -> void:
 func _refresh_rpc_probe_rows(is_in_room: bool, is_master: bool) -> void:
 	_set_row_visible(_rpc_probe_send_row, is_in_room and is_master)
 	_set_row_visible(_rpc_probe_receive_row, not is_in_room or not is_master)
+	if not _network_size_reset:
+		_network_size_reset = true
+		_reset_network_size.call_deferred()
 
 
 func _set_row_visible(row: Array, should_show: bool) -> void:
@@ -427,3 +433,9 @@ func _set_row_visible(row: Array, should_show: bool) -> void:
 		var canvas_item := item as CanvasItem
 		if canvas_item != null:
 			canvas_item.visible = should_show
+
+
+func _reset_network_size() -> void:
+	_network_panel.size = Vector2.ZERO
+	_network_margin.size = Vector2.ZERO
+	_network_margin.reset_size()
