@@ -127,8 +127,9 @@ func _process(delta: float) -> void:
 		_scan_players()
 
 	if _sample_elapsed >= SAMPLE_INTERVAL:
-		_player_sync_up_hz = _player_sync_up_samples / _sample_elapsed
-		_player_sync_down_hz = _player_sync_down_samples / _sample_elapsed
+		var player_count := maxi(1, _tracked_players.size())
+		_player_sync_up_hz = _player_sync_up_samples / _sample_elapsed / player_count
+		_player_sync_down_hz = _player_sync_down_samples / _sample_elapsed / player_count
 		_rpc_probe_send_hz = _rpc_probe_send_samples / _sample_elapsed
 		_rpc_probe_receive_hz = _rpc_probe_receive_samples / _sample_elapsed
 		_player_sync_up_samples = 0
