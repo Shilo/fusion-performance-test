@@ -41,12 +41,14 @@ const MONITOR_METHODS := {
 	&"sync_rate": %SyncRateValue,
 	&"rpc_rate": %RpcRateValue,
 	&"smoothing": %SmoothingValue,
+	&"spawn_player": %SpawnPlayerValue,
 }
 @onready var _toggle_shortcuts := {
 	&"toggle_interest_area": %InterestAreaShortcut,
 	&"toggle_sync_rate": %SyncRateShortcut,
 	&"toggle_rpc_rate": %RpcRateShortcut,
 	&"toggle_smoothing": %SmoothingShortcut,
+	&"spawn_extra_player": %SpawnPlayerShortcut,
 }
 @onready var _network_margin: MarginContainer = %NetworkMargin
 @onready var _network_panel: PanelContainer = %NetworkPanel
@@ -140,6 +142,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed(&"toggle_smoothing"):
 		_toggle_smoothing()
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"spawn_extra_player"):
+		_spawn_extra_player()
+		get_viewport().set_input_as_handled()
 
 
 func _physics_process(_delta: float) -> void:
@@ -192,6 +197,7 @@ func _refresh_stats() -> void:
 	_set_label(&"sync_rate", _sync_rate_text())
 	_set_label(&"rpc_rate", _rpc_rate_text())
 	_set_label(&"smoothing", _smoothing_text())
+	_set_label(&"spawn_player", "+1")
 	if not _toggle_size_reset:
 		_toggle_size_reset = true
 		_reset_toggle_size.call_deferred()
@@ -429,6 +435,11 @@ func _toggle_smoothing() -> void:
 @rpc("any_peer", "call_local", "reliable")
 func rpc_set_smoothing_enabled(enabled: bool) -> void:
 	_set_smoothing_enabled(enabled)
+
+
+func _spawn_extra_player() -> void:
+	if Game.instance != null:
+		Game.instance.spawn_player()
 
 
 func _sync_interest_area_from_room() -> void:

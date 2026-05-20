@@ -32,6 +32,13 @@ func _on_connected() -> void:
 
 
 func _on_room_joined() -> void:
+	spawn_player()
+
+
+func spawn_player() -> void:
+	if not Fusion.is_in_room():
+		return
+
 	%FusionSpawner.spawn(null, func(__, player: Player) -> void:
 		var bounds := get_player_spawn_bounds(player)
 		player.global_position = Vector2(
